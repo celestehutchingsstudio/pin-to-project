@@ -886,6 +886,18 @@ button.ref:hover{background:var(--subtle)}
 .rbtn:focus-visible .tip{opacity:1}
 /* round 22: smaller overview image on the project page */
 .pp .side-card .cov{width:240px;max-width:100%}
+/* round 24: pick your Pins */
+.pk-d{max-width:1280px;margin:0 auto;padding-top:24px}
+.pk{display:flex;flex-direction:column}
+.pk-step{margin:0 0 4px;font-size:var(--fs-100);font-weight:var(--fw-semi);color:var(--fg2)}
+.pk-h{margin:0;font-size:28px;line-height:1.2}
+.pk.m .pk-h{font-size:var(--fs-400)}
+.pk-sub{margin:8px 0 16px;color:var(--fg2);max-width:52ch}
+.pk-tabs{margin-bottom:16px}
+.pk-boards{grid-template-columns:repeat(6,minmax(0,120px));margin-bottom:24px}
+.pk.m .pk-boards{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:88px;overflow-x:auto;margin:0 -16px 16px;padding:0 16px;scrollbar-width:none}
+.pk-skip{margin:16px 0 8px;text-align:center;color:var(--fg2)}
+.lnk{font-weight:var(--fw-semi);color:var(--fg);text-decoration:underline;text-underline-offset:2px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1168,6 +1180,7 @@ function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const li
  <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,10),(x)=>pinCard(x))}</div>${pinMoreMenu()}`);}
 
 function selBar(kind){const n=S.selected.size;
+ if(kind==='pick')return `<div class="selbar" role="region" aria-label="Selection"><b>${n?`${n} Pin${n>1?'s':''} selected`:'Pick at least one Pin'}</b><button class="btn btn-primary sm" data-a="pickNext" ${n?'':'disabled'}>Next</button></div>`;
  if(kind==='board')return `<div class="selbar" role="region" aria-label="Selection"><b>${n?`${n} Pin${n>1?'s':''} selected`:'Select Pins for your project'}</b><button class="btn btn-ghost sm" data-a="cancelSel">Cancel</button><button class="btn btn-primary sm" data-a="boardNext" ${n?'':'disabled'}>Next</button></div>`;
  return `<div class="selbar" role="region" aria-label="Selection"><b>${n?`${n} selected`:'Select ideas to organize'}</b><button class="btn btn-ghost sm" data-a="cancelSel">Cancel</button><button class="btn btn-primary sm" data-a="addToProjMenu" ${n?'':'disabled'}>Add to project</button></div>`;}
 function addToMenu(){return S.pop==='addto'?`<div class="click-catch" data-a="closePop"></div><div class="menu addto" style="left:50%;transform:translateX(-50%);bottom:84px" role="menu">${S.projects.filter(p=>p.status!=='made').map(p=>`<button class="mi" data-a="addTo" data-id="${p.id}">${esc(p.title)}</button>`).join('')}</div>`:'';}
@@ -1241,6 +1254,15 @@ function ideasPanel(m){const t=S.ideasTab;let body='';
  else body=`${grid(FEED.slice(0,14),(id)=>pinCard(id,{pick:'pickIdea',pickLabel:S.draft&&S.draft.title?'Add':'Use'}),{cols:2})}`;
  return `<aside class="ideas" aria-label="Find ideas"><label class="search pill"><span>${I('search')}</span><input id="q-ideas" placeholder="Search for project ideas"></label>
  <div class="tabs" role="tablist">${[['more','More ideas'],['boards','Your boards'],['brand','Brand kit']].map(([k,l])=>`<button class="tab" role="tab" data-a="ideasTab" data-v="${k}" aria-selected="${t===k}">${l}</button>`).join('')}</div>${body}</aside>`;}
+/* ----- pick your Pins (round 24): first step for any project not started from a Pin ----- */
+function pickBody(m){const src=S.pickSrc||'boards';const bi=S.pickBoard||0;const ids=src==='boards'?SAVED[bi].pins:FEED.slice(0,24);
+ return `<div class="pk${m?' m':''}"><p class="pk-step">Step 1 of 2</p><h2 class="pk-h">Pick your Pins</h2><p class="pk-sub">Choose the Pins you want to make. Pinterest builds the steps and materials from them.</p>
+ <div class="tabs pk-tabs" role="tablist">${[['boards','Your boards'],['more','More ideas']].map(([k,l])=>`<button class="tab" role="tab" data-a="pickSrc" data-v="${k}" aria-selected="${src===k}">${l}</button>`).join('')}</div>
+ ${src==='boards'?`<div class="boards-row pk-boards">${SAVED.map((x,i)=>`<button class="bthumb" data-a="pickBoard" data-i="${i}" aria-pressed="${bi===i}"><span class="im">${img(x.img)}</span>${esc(x.n)}</button>`).join('')}</div>`:''}
+ ${grid(ids,(id)=>pinCard(id,{select:true}),m?{cols:2}:{})}
+ <p class="pk-skip">No Pin in mind? <button class="lnk" data-a="pickNone">Start without a Pin</button></p>${selBar('pick')}</div>`;}
+function dPick(){return dShell(`<div class="cp-top"><button class="ib" data-a="closeCreate" aria-label="Close">${I('x')}</button><h1>New project</h1></div><div class="d-body pk-d">${pickBody(false)}</div>`,{top:false});}
+function mPick(){return `${mStatus()}<div class="m-head"><button class="ib" data-a="back" aria-label="Close">${I('x')}</button><h1>New project</h1><span style="width:40px"></span></div><div class="m-body">${pickBody(true)}</div>`;}
 function dCreate(){const d=S.draft;
  return dShell(`<div class="cp-top"><button class="ib" data-a="closeCreate" aria-label="Close">${I('x')}</button><h1>${S.editing?'Edit project':'New project'}</h1>
  <button class="btn btn-secondary" data-a="later" ${d.creating?'disabled':''}>Save for later</button><button class="btn btn-primary" data-a="next" ${d.creating?'aria-disabled="true"':''}>${d.creating?'<span class="spin"></span>Creating…':S.editing?'Save changes':'Create project'}</button></div>
@@ -1395,8 +1417,8 @@ function mFinished(){const p=proj();return `${mStatus()}<div class="m-head"><but
  <div class="m-body" style="padding-top:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h1 style="font-size:var(--fs-500);margin:0">${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help" style="width:100%">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span></div>${finBody(p,true)}</div>`;}
 
 /* ---------- render ---------- */
-const SCREENS={desktop:{saved:dSaved,home:dHome,pin:dPin,board:dBoard,hub:dHub,create:dCreate,project:dProject,overview:dProject,finished:dFinished},
- mobile:{saved:mSaved,home:mHome,pin:mPin,board:mBoard,hub:mHub,create:mCreate,project:mRoadmap,overview:mOverview,finished:mFinished}};
+const SCREENS={desktop:{saved:dSaved,home:dHome,pin:dPin,board:dBoard,hub:dHub,pick:dPick,create:dCreate,project:dProject,overview:dProject,finished:dFinished},
+ mobile:{saved:mSaved,home:mHome,pin:mPin,board:mBoard,hub:mHub,pick:mPick,create:mCreate,project:mRoadmap,overview:mOverview,finished:mFinished}};
 function render(nav,toY){const app=$('.app');const y=nav?(toY||0):curY();
  const m=S.dev==='mobile';let html=SCREENS[S.dev][S.screen]();
  if(m&&['home','hub','finished'].includes(S.screen)&&!S.select) html+=tabbar(S.screen).replace('class="tabbar"',`class="tabbar${S.barHidden?' hide':''}"`);
@@ -1409,12 +1431,12 @@ function render(nav,toY){const app=$('.app');const y=nav?(toY||0):curY();
 /* ---------- jump to a designed screen ---------- */
 const JUMPS={
  D1:['desktop',()=>{go('home',{replace:true});}],D2:['desktop',()=>{go('home',{replace:true});S.pop='create';render();}],D3:['desktop',()=>go('pin',{set:{pinId:'p27'}})],D4:['desktop',()=>go('board',{set:{bi:0}})],D4s:['desktop',()=>go('saved')],
- D5:['desktop',()=>{seed(2);go('hub',{set:{filter:'progress'}});}],D6:['desktop',()=>{S.draft=draftFromPin('p27');S.editing=false;S.errors={};go('create');}],D7:['desktop',()=>{seed(2);S.open=2;go('project',{set:{cur:'stamps'}});}],D8:['desktop',()=>{seed(5);go('finished',{set:{cur:'stamps'}});}],
+ D5:['desktop',()=>{seed(2);go('hub',{set:{filter:'progress'}});}],D5p:['desktop',()=>{go('hub',{replace:true,set:{filter:'progress'}});go('pick',{set:{pickSrc:'boards',pickBoard:0}});}],D6:['desktop',()=>{S.draft=draftFromPin('p27');S.editing=false;S.errors={};go('create');}],D7:['desktop',()=>{seed(2);S.open=2;go('project',{set:{cur:'stamps'}});}],D8:['desktop',()=>{seed(5);go('finished',{set:{cur:'stamps'}});}],
  M1:['mobile',()=>go('home',{replace:true})],M2:['mobile',()=>{go('home',{replace:true});S.sheet='create';render();}],M3:['mobile',()=>go('pin',{set:{pinId:'p27'}})],M4:['mobile',()=>go('board')],
- M5:['mobile',()=>{seed(2);go('hub',{set:{filter:'progress'}});}],M6:['mobile',()=>{seed(2);go('hub',{set:{filter:'progress'}});S.sheet='create';render();}],M7:['mobile',()=>{seed(2);S.draft=blankDraft();go('hub',{set:{filter:'progress'}});S.sheet='ideas';render();}],
+ M5:['mobile',()=>{seed(2);go('hub',{set:{filter:'progress'}});}],M6:['mobile',()=>{seed(2);go('hub',{set:{filter:'progress'}});S.sheet='create';render();}],M7:['mobile',()=>{seed(2);go('hub',{set:{filter:'progress'}});go('pick',{set:{pickSrc:'boards',pickBoard:0}});}],
  M8:['mobile',()=>{S.draft=draftFromPin('p27');S.editing=false;S.errors={};go('create');}],M9:['mobile',()=>{seed(2);go('overview',{set:{cur:'stamps'}});}],M10:['mobile',()=>{seed(2);S.open=2;go('project',{set:{cur:'stamps'}});}],
  M11:['mobile',()=>{seed(5);go('finished',{set:{cur:'stamps'}});}],M12:['mobile',()=>{seed(5);go('finished',{set:{cur:'stamps'}});S.lightbox={kind:'step',i:2};render();}]};
-const JUMP_NAMES={D1:'Home feed',D2:'Create menu',D3:'Pin close-up',D4:'Board',D4s:'Saved boards',D5:'Projects hub',D6:'New project',D7:'Project page',D8:'Made it',M1:'Home feed',M2:'Create sheet',M3:'Pin close-up',M4:'Board',M5:'Projects hub',M6:'Create from the hub',M7:'Find ideas',M8:'New project',M9:'Project overview',M10:'Roadmap and steps',M11:'Made it',M12:'Photo detail'};
+const JUMP_NAMES={D1:'Home feed',D2:'Create menu',D3:'Pin close-up',D4:'Board',D4s:'Saved boards',D5:'Projects hub',D5p:'Pick your Pins',D6:'New project',D7:'Project page',D8:'Made it',M1:'Home feed',M2:'Create sheet',M3:'Pin close-up',M4:'Board',M5:'Projects hub',M6:'Create from the hub',M7:'Pick your Pins',M8:'New project',M9:'Project overview',M10:'Roadmap and steps',M11:'Made it',M12:'Photo detail'};
 function seed(done){const i=S.projects.findIndex(p=>p.id==='stamps');const p=stampsProject(done);if(i<0)S.projects.unshift(p);else S.projects[i]=p;S.loading=false;}
 
 /* ---------- actions ---------- */
@@ -1460,7 +1482,12 @@ const A={
  follow:()=>{S.following=!S.following;render();if(S.following)toast('Following Hello Stitch Studio');},
  makeThis:el=>startDraft(draftFromPin(el.dataset.id)),
  lightboxPin:()=>{S.lightbox={kind:'pin'};render();},
- newBlank:()=>{S.pop=null;startDraft(blankDraft());},
+ newBlank:()=>{S.pop=null;go('pick',{set:{pickSrc:'boards',pickBoard:0}});},
+ pickSrc:el=>{S.pickSrc=el.dataset.v;render();},pickBoard:el=>{S.pickBoard=+el.dataset.i;render();},
+ pickNone:()=>{startDraft(blankDraft());},
+ pickNext:el=>{if(el.disabled)return;const ids=[...S.selected];if(!ids.length)return;const d=draftFromPin(ids[0]);
+  ids.slice(1).forEach(id=>{if(!d.covers.includes(id))d.covers.push(id);const r='Pin: '+PINS[id].t;if(!d.refs.includes(r))d.refs.push(r);});
+  d.refsPins=ids;if(ids.length>=3){d.split=true;d.covers=ids.concat(d.covers.filter(x=>!ids.includes(x)));}startDraft(d);},
  boardProject:()=>{const b=bd();S.select='board';S.selected=new Set(b.pins.slice(0,6));render();},
  boardProjectOld:()=>{S.select=null;S.selected.clear();const b=bd();const ids=b.pins.slice(0,6);const d=blankDraft();d.boardName=b.n;d.split=true;S.ideasTab='boards';S.ideasBoard=S.bi||0;d.refsPins=ids;d.cover=ids[0];d.covers=ids;d.refs=ids.map(id=>'Pin: '+PINS[id].t);d.suggested=true;
   d.steps=gen(['Plan the layout','Gather materials','Make it','Style and finish'],['30m','1h']).map((s,i)=>Object.assign(s,{done:false,img:ids[i]||null}));startDraft(d);},
@@ -1498,7 +1525,7 @@ const A={
  later:()=>{S.pop=null;if(!S.draft.title.trim()){S.errors={title:true};render();$('#f-title').focus();return;}createProject('want');},
  ideasTab:el=>{S.ideasTab=el.dataset.v;render();},ideasBoard:el=>{S.ideasBoard=+el.dataset.i;render();},
  pickIdea:el=>{const id=el.dataset.id;if(S.screen==='create'&&S.draft&&S.draft.title&&!S.sheet){S.draft.refs.push('Pin: '+PINS[id].t);render();toast('Added to references');}else{S.sheet=null;startDraft(draftFromPin(id));}},
- openIdeas:()=>{S.pop=null;if(!S.draft)S.draft=blankDraft();S.sheet='ideas';render();},
+ openIdeas:()=>{S.pop=null;go('pick',{set:{pickSrc:'boards',pickBoard:0}});},
  mBlank:()=>{S.sheet=null;startDraft(blankDraft());},
  createMore:()=>{S.pop='createmore';render();},
  // project
@@ -1533,7 +1560,7 @@ const A={
  shareTo:el=>{S.pop=null;render();if(S.offline){toast('Couldn’t share while offline.',{err:true,action:'Retry',fn:()=>A.shareTo(el)});return;}toast(el.dataset.v,{action:'View',fn:()=>go('pin',{set:{pinId:proj().pinId||'p27'}})});},
  finMore:()=>{S.pop=S.pop==='finmore'?null:'finmore';render();},
  reopen:()=>{const p=proj();p.status='progress';p.steps[p.steps.length-1].done=false;S.open=p.steps.length-1;go(S.dev==='mobile'?'project':'project',{replace:true});toast('Moved back to In progress');},
- makeAgain:()=>{const p=proj();startDraft(p.pinId?draftFromPin(p.pinId):blankDraft());},
+ makeAgain:()=>{const p=proj();p.pinId?startDraft(draftFromPin(p.pinId)):go('pick',{set:{pickSrc:'boards',pickBoard:0}});},
  lb:el=>{S.lightbox={kind:'step',i:+el.dataset.i};render();},lbHero:()=>{S.lightbox={kind:'hero'};render();},
  lbPrev:()=>{S.lightbox.i=Math.max(0,S.lightbox.i-1);render();},lbNext:()=>{S.lightbox.i=Math.min(proj().steps.length-1,S.lightbox.i+1);render();},lbGo:el=>{S.lightbox.i=+el.dataset.i;render();},
  closeLb:()=>{S.lightbox=null;render();},
