@@ -898,6 +898,13 @@ button.ref:hover{background:var(--subtle)}
 .pk.m .pk-boards{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:88px;overflow-x:auto;margin:0 -16px 16px;padding:0 16px;scrollbar-width:none}
 .pk-skip{margin:16px 0 8px;text-align:center;color:var(--fg2)}
 .lnk{font-weight:var(--fw-semi);color:var(--fg);text-decoration:underline;text-underline-offset:2px}
+/* round 25: every month keeps its two-month size. 1 month leaves white space, 3-4 wrap into a 2-column grid, 5+ become a sideways gallery */
+.cal-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cal-wrap.gal{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc((100% - 16px)/2);overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;padding-bottom:8px;scrollbar-width:thin}
+.cal-wrap.gal .cal{scroll-snap-align:start}
+.dev-mobile .cal-wrap{grid-template-columns:1fr}
+.dev-mobile .cal-wrap.gal{grid-template-columns:none;grid-auto-columns:100%}
+.cal-more{display:flex;align-items:center;gap:4px;margin:8px 0 0;font-size:var(--fs-100);color:var(--fg2)}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1120,15 +1127,15 @@ function projCard(p){const d=stepsDone(p);const pct=Math.round(d/p.steps.length*
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 function calendar(p,o={}){const s=p.start,e=p.end;const cks=new Set(checkins(p));const dn=new Set(o.done||[]);const t=o.target;
  const base=p.calM!=null?p.calM:(()=>{const d=D(s);return d.getFullYear()*12+d.getMonth();})();
- const span=(()=>{const a=D(s),b=D(e);return Math.min(3,Math.max(1,(b.getFullYear()*12+b.getMonth())-(a.getFullYear()*12+a.getMonth())+1));})();
+ const span=(()=>{const a=D(s),b=D(e);return Math.min(12,Math.max(1,(b.getFullYear()*12+b.getMonth())-(a.getFullYear()*12+a.getMonth())+1));})();
  const months=Array.from({length:span},(_,k)=>base+k).map(x=>[Math.floor(x/12),x%12]);const lastI=months.length-1;
- return `<div class="cal-wrap">${months.map(([y,m],mi)=>{const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();
+ return `<div class="cal-wrap${span>4?' gal':''}" data-n="${span}"${span>4?` role="region" aria-label="${span} months, scroll sideways" tabindex="0"`:''}>${months.map(([y,m],mi)=>{const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();
   let cells='';for(let i=0;i<pad;i++)cells+='<span class="d blank"></span>';
   for(let d=1;d<=n;d++){const k=iso(new Date(y,m,d));let c='d';if(k===s)c+=' s';else if(k===e)c+=' e';else if(k>s&&k<e)c+=' in';if(cks.has(k)&&k!==s&&k!==e)c+=' c';if(dn.has(k))c+=' done';
    const lab=`${MONTHS[m]} ${d}${k===s?', start':k===e?', finish':''}`;
    cells+=t?`<button class="${c}" data-a="pickDay" data-t="${t}" data-v="${k}" aria-label="${lab}" aria-pressed="${k===s||k===e}">${d}</button>`:`<span class="${c}">${d}</span>`;}
   const prev=t&&mi===0?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="-1" aria-label="Previous month">${I('left','sm')}</button>`:'';const next=t&&mi===lastI?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="1" aria-label="Next month">${I('right','sm')}</button>`:'';
-  return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>`;}
+  return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${span>4?`<p class="cal-more">${I('right','sm')}Scroll sideways to see all ${span} months</p>`:''}`;}
 function calHelp(p){return `<span class="help">${p.pick==='end'?`Start is ${fmt(p.start)}. Now click the finish date.`:'Click a date to move the start, then click the finish date.'}</span>`;}
 function legend(){return `<div class="keyd"><i style="background:var(--sel)"></i>Start and finish <i style="box-shadow:inset 0 0 0 2px var(--accent)"></i>Check-in</div>`;}
 
@@ -1512,8 +1519,8 @@ const A={
  rmStep:el=>{const d=S.draft;const i=+el.dataset.i;const s=d.steps.splice(i,1)[0];render();toast(`Removed ${s.t}`,{action:'Undo',fn:()=>{d.steps.splice(i,0,s);render();}});},
  addStep:()=>{S.draft.adding=true;render();$('#f-step').focus();},cancelStep:()=>{S.draft.adding=false;render();},
  preset:el=>{const d=S.draft;d.preset=el.dataset.v;if(d.preset!=='custom')d.end=addDays(d.start,PRESET[d.preset]);d.pick='start';d.calM=null;render();},
- pickDay:el=>{const isP=el.dataset.t==='proj';const d=isP?proj():S.draft;const v=el.dataset.v;const vis=d.calM!=null?d.calM:(D(d.start).getFullYear()*12+D(d.start).getMonth());
-  if(d.pick!=='end'){d.start=v;if(d.end<v)d.end=v;d.pick='end';}else{if(v<d.start){d.end=d.start;d.start=v;}else d.end=v;d.pick='start';}
+ pickDay:el=>{const isP=el.dataset.t==='proj';const d=isP?proj():S.draft;const v=el.dataset.v;let vis=d.calM!=null?d.calM:(D(d.start).getFullYear()*12+D(d.start).getMonth());
+  if(d.pick!=='end'){d.start=v;if(d.end<v)d.end=v;d.pick='end';}else{if(v<d.start){d.end=d.start;d.start=v;}else d.end=v;d.pick='start';vis=null;}
   d.preset=[6,13,29].includes(diff(d.start,d.end))?{6:'week',13:'2w',29:'month'}[diff(d.start,d.end)]:'custom';d.calM=vis;render();
   if(isP&&d.pick==='start'){d.activity.unshift({t:`Changed the timeline to ${fmt(d.start)} – ${fmt(d.end)}`,d:'Today'});toast(`Timeline updated: ${fmt(d.start)} – ${fmt(d.end)}`,{icon:'clock'});}},
  calNav:el=>{const d=el.dataset.t==='proj'?proj():S.draft;const cur=d.calM!=null?d.calM:(D(d.start).getFullYear()*12+D(d.start).getMonth());d.calM=cur+(+el.dataset.v);render();},
