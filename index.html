@@ -1115,6 +1115,22 @@ input::placeholder,textarea::placeholder{color:var(--ph);opacity:1}
 .addc .search:focus-within{border-color:var(--fg);box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
 .pin .ph:has(> .pin-open:focus-visible){box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
 .ttabs{padding-top:4px;padding-bottom:4px;padding-left:4px;margin-left:-4px}
+/* r46 responsive desktop: tablet (760-1180) through ultra-wide */
+.cp,.pp{margin-left:auto;margin-right:auto}
+.fin-page{max-width:1408px;margin-left:auto;margin-right:auto}
+.dev-desktop .photos{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+@media (min-width:1600px){.fin-top{grid-template-columns:480px minmax(0,1fr)}}
+@media (max-width:1180px){.fin-top{grid-template-columns:minmax(240px,320px) minmax(0,1fr)}}
+@media (max-width:900px){
+ .closeup{grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin:8px 0 32px}
+ .closeup .side{padding:0 20px 20px}
+ .closeup .bar{margin:0 -20px;padding:20px 20px 12px}
+ .closeup .bar .boardpick{max-width:150px}
+ .cover-row{grid-template-columns:200px minmax(0,1fr)}
+ .fin-top{grid-template-columns:minmax(200px,260px) minmax(0,1fr);gap:24px}
+ .cp,.pp{padding:24px 20px 48px}
+}
+@media (max-width:359px){.dev-mobile .next.nx .acts{flex-wrap:wrap}.dev-mobile .next.nx .acts .btn{flex:1 1 100%}}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1628,7 +1644,7 @@ function finBody(p,m){const ph=finPhotos(p).filter(x=>!S.finSearch||x.t.toLowerC
  <form class="addc" data-f="finComment">${av('June')}<label class="search pill"><input id="c-fin" placeholder="Add a comment" aria-label="Add a comment" autocomplete="off"><button class="ib sm" aria-label="Post comment">${I('send','sm')}</button></label></form></div>
  <div class="sec-h"><h2>More to explore</h2></div>${grid(['p02','p09','p24','p06','p23','p26','p13','p03'],(id)=>pinCard(id))}`;}
 function dFinished(){const p=proj();
- return dShell(`<div class="d-body"><div class="fin-head"><h1>${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span><span style="flex:1"></span>
+ return dShell(`<div class="d-body fin-page"><div class="fin-head"><h1>${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span><span style="flex:1"></span>
  <span style="position:relative;display:flex;gap:8px"><button class="btn btn-secondary" data-a="shareMenu" aria-expanded="${S.pop==='share'}">${I('share','sm')}Share</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:48px;top:52px')}${finMore('right:0;top:52px')}</span></div>
  <div style="display:flex;margin-bottom:16px">${av('June')}${av('R','b')}</div>${finBody(p,false)}</div>`);}
 
