@@ -1131,6 +1131,16 @@ input::placeholder,textarea::placeholder{color:var(--ph);opacity:1}
  .cp,.pp{padding:24px 20px 48px}
 }
 @media (max-width:359px){.dev-mobile .next.nx .acts{flex-wrap:wrap}.dev-mobile .next.nx .acts .btn{flex:1 1 100%}}
+/* r47 full-width desktop: no width caps, columns scale with the screen */
+.d-body.narrow,.pk-d,.cp,.pp,.fin-page{max-width:none;margin-left:0;margin-right:0}
+.cp{grid-template-columns:minmax(0,1fr) clamp(340px,26vw,560px)}
+.pp{grid-template-columns:minmax(0,1fr) clamp(380px,28vw,600px)}
+.closeup{max-width:none;margin:8px 0 40px;grid-template-columns:minmax(0,1.1fr) minmax(360px,1fr)}
+.fin-top{grid-template-columns:clamp(320px,30vw,720px) minmax(0,1fr)}
+.dev-desktop .grid-cards{grid-template-columns:repeat(auto-fill,minmax(clamp(220px,15vw,340px),1fr))}
+.dev-desktop .photos{grid-template-columns:repeat(auto-fill,minmax(clamp(180px,14vw,320px),1fr))}
+@media (max-width:1180px){.cp,.pp{grid-template-columns:1fr}.fin-top{grid-template-columns:minmax(240px,320px) minmax(0,1fr)}}
+@media (max-width:900px){.closeup{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fin-top{grid-template-columns:minmax(200px,260px) minmax(0,1fr)}}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
