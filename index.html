@@ -1075,6 +1075,18 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .pi-by span{text-transform:none;letter-spacing:0;font-weight:var(--fw-semi)}
 .ttab{min-width:32px;text-align:center}
 .lightbox .dots{gap:0}.lightbox .dots button{width:32px;height:32px}
+/* r40: mobile Pin info order + comment bar */
+.pin-info.m .pi-desc{margin-top:0}
+.pin-info .pi-desc + .pi-visit{margin-top:16px}
+.addc{gap:8px}
+.addc>.av{width:32px;height:32px}
+.addc .search{flex:1;min-width:0;height:48px;padding:0 8px 0 16px;gap:0;background:var(--bg);border:1px solid var(--line-strong);border-radius:var(--r-400)}
+.addc .search:focus-within{border-color:var(--fg);box-shadow:none}
+.addc .search input{flex:1;min-width:0;font-size:var(--fs-300);color:var(--fg)}
+.addc .search input::placeholder{color:var(--fg2);opacity:1}
+.addc .search .ib.sm{width:32px;height:32px;color:var(--fg)}
+.pin-info:not(.m){margin-bottom:8px}
+.addc .search input:focus,.addc .search input:focus-visible{outline:none}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1371,8 +1383,7 @@ function pinDesc(id,p){return id==='p27'?'Four botanical postage stamps stitched
 function pinInfo(id,p,m){const desc=pinDesc(id,p);const more=S.descMore===id;const long=desc.length>110;const visit=`<button class="btn btn-secondary pi-visit" data-a="visit" data-id="${id}">Visit site</button>`;
  return `<div class="pin-info${m?' m':''}"><button class="pi-by" data-a="toastMsg" data-v="Opens ${esc(p.by)}’s profile">${av(p.by,'b')}<span>${esc(p.by)}</span></button>
  <h1 class="pi-t">${esc(p.t)}</h1>${m?'':makeCard(id)}
- ${m?visit:''}
- <div class="pi-desc"><h2>Description</h2><p class="${more||!long?'':'clamp'}" id="pi-desc-${id}">${esc(desc)}</p>${long?`<button class="pi-more" data-a="descMore" data-id="${id}" aria-expanded="${more}" aria-controls="pi-desc-${id}">${more?'See less':'See more'}</button>`:''}</div>${m?'':visit}</div>`;}
+ <div class="pi-desc"><h2>Description</h2><p class="${more||!long?'':'clamp'}" id="pi-desc-${id}">${esc(desc)}</p>${long?`<button class="pi-more" data-a="descMore" data-id="${id}" aria-expanded="${more}" aria-controls="pi-desc-${id}">${more?'See less':'See more'}</button>`:''}</div>${visit}</div>`;}
 function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
  return dShell(`<div class="d-body"><div style="position:relative">
  <article class="closeup"><div class="imgc">${img(id,p.t)}<button class="ib glass" data-a="back" aria-label="Back" style="position:absolute;left:16px;top:16px">${I('back')}</button><div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
@@ -1513,7 +1524,8 @@ function stepRefs(p,s){if(s.r)return s.r;const txt=(s.t+' '+(s.meta||'')+' '+s.b
  if(!out.length&&p.pinId&&PINS[p.pinId]&&/Pin’s tutorial/.test(s.b.join(' ')))out.push('Pin: '+PINS[p.pinId].t);return out;}
 function stepRefsHtml(p,s){const rf=stepRefs(p,s);return rf.length?`<div class="nx-refs" aria-label="References for this step">${rf.map(r=>refRow(r,p.pinId&&PINS[p.pinId]?PINS[p.pinId].src:null)).join('')}</div>`:s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:'';}
 function nextCard(p,m){const n=nextIdx(p);const d=stepsDone(p);
- if(n==null&&S.focus==null)return `<div class="next" style="grid-template-columns:1fr auto"><div><small>All ${p.steps.length} steps done</small><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><button class="btn btn-primary" data-a="complete">Complete project</button></div>`;
+ if(n==null&&S.focus==null)return `<div class="next nx all-done" id="next-card"><div class="nx-h"><span class="st done">${I('check','sm')}</span><span class="nx-lab">All ${p.steps.length} steps done</span></div>
+ <div class="nx-row"><div class="im">${p.cover?img(p.cover,p.title):`<span class="ph-txt" style="height:100%;background:var(--surface)">${I('check')}</span>`}</div><div class="nx-t"><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><div class="nx-b"><div class="acts"><button class="btn btn-primary mark-done" data-a="complete">Complete project</button></div></div></div></div>`;
  const i=S.focus!=null&&p.steps[S.focus]?S.focus:n;const s=p.steps[i];const last=d-1;ensureWip(p);
  const st=s.done?'done':s.wip?'cur':'';const jd=S.justDone!=null&&p.steps[S.justDone]&&p.steps[S.justDone].done?S.justDone:null;
  const lab=i===n?`Next step · ${d} of ${p.steps.length} done`:s.done?`Done ${esc(s.date||'')}`:s.wip?'In progress':'To start';
