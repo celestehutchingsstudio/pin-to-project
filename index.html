@@ -801,6 +801,13 @@ body{margin:0}
 .road-hint{margin:8px 0 0}
 .step-order{margin:8px 0 0}
 .rcard.menu-open{z-index:31}
+/* empty cover: Choose a Pin */
+.cover .ci.empty{display:grid;place-items:center;background:var(--subtle)}
+.cover .ci.empty .choose-pin{position:relative;z-index:1;box-shadow:var(--shadow)}
+/* ideas picker as a centred dialog on desktop */
+.dev-desktop .sheet-bg{position:fixed}
+.dev-desktop .sheet{position:fixed;left:50%;top:50%;bottom:auto;right:auto;transform:translate(-50%,-50%);width:min(720px,calc(100vw - 48px));max-height:min(780px,calc(100vh - 64px));border-radius:var(--r-800);padding:16px 24px 24px;animation:fade .2s}
+.dev-desktop .sheet .grab{display:none}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1126,7 +1133,7 @@ function createForm(m){const d=S.draft;const e=S.errors;const dis=d.creating?'di
  return `<div class="cp-form">
  ${pin?`<div class="from">${img(d.fromPin)}<span class="t">From your Pin: <b>${esc(pin.t)}</b> · ${esc(pin.src)}</span><button class="ib sm" data-a="openPin" data-id="${d.fromPin}" aria-label="Open source Pin">${I('link','sm')}</button></div>`:
  d.refsPins&&d.refsPins.length?`<div class="from"><span class="t">From your board: <b>${esc(d.boardName||SAVED[0].n)}</b> · ${d.refsPins.length} Pins</span></div>`:`<div class="from"><span class="t">Start from scratch, or pick a Pin from ${m?'Find ideas':'the ideas panel'} to fill this in for you.</span>${m?`<button class="btn btn-secondary xs" data-a="openIdeas">Find ideas</button>`:''}</div>`}
- <div class="cover-row"><div class="cover">${d.split&&d.refsPins&&d.refsPins.length>=3?`<div class="ci split">${d.refsPins.slice(0,3).map(k=>img(k)).join('')}</div>`:`<div class="ci">${d.cover?img(d.cover):`<span class="ph-txt" style="height:100%">${I('image','lg')}</span>`}</div>`}<button class="link" data-a="changeCover" ${dis}>${d.cover?'Change cover':'Add cover'}</button></div>
+ <div class="cover-row"><div class="cover">${d.split&&d.refsPins&&d.refsPins.length>=3?`<div class="ci split">${d.refsPins.slice(0,3).map(k=>img(k)).join('')}</div>`:(d.cover?`<div class="ci">${img(d.cover)}</div>`:`<div class="ci empty"><button class="btn btn-primary choose-pin" data-a="openIdeas" ${dis}>${I('search','sm')}Choose a Pin</button></div>`)}${d.cover||d.split?`<button class="link" data-a="changeCover" ${dis}>Change cover</button>`:''}</div>
  <div class="cp-fields"><div class="field"><label for="f-title">Title</label><input class="inp ${e.title?'err':''}" id="f-title" data-k="title" value="${esc(d.title)}" placeholder="Add a title" ${dis} aria-invalid="${!!e.title}" aria-describedby="f-title-err">
  ${e.title?`<span class="err-msg" id="f-title-err">${I('alert','sm')}Add a name to save this project</span>`:''}</div>
  <div class="field"><label for="f-desc">Project description</label><textarea class="inp" id="f-desc" data-k="desc" placeholder="What are you making, and for where?" ${dis}>${esc(d.desc)}</textarea><span class="help">Optional</span></div>
