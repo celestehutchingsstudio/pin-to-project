@@ -1322,7 +1322,7 @@ function calendar(p,o={}){const s=p.start,e=p.end;const cks=new Set(checkins(p))
  const base=p.calM!=null?p.calM:(()=>{const d=D(s);return d.getFullYear()*12+d.getMonth();})();
  const span=(()=>{const a=D(s),b=D(e);return Math.min(12,Math.max(1,(b.getFullYear()*12+b.getMonth())-(a.getFullYear()*12+a.getMonth())+1));})();
  const months=Array.from({length:span},(_,k)=>base+k).map(x=>[Math.floor(x/12),x%12]);const lastI=months.length-1;
- return `<div class="cal-box${S.dev==='mobile'&&(S.screen==='project'||S.screen==='create')?' row':''}"><div class="cal-wrap${S.dev==='mobile'&&S.screen==='create'?'':span>4||(S.dev==='mobile'&&S.screen==='project'&&span>1)?' gal':''}" data-n="${span}"${span>4&&!(S.dev==='mobile'&&S.screen==='create')?` role="region" aria-label="${span} months, scroll sideways" tabindex="0"`:''}>${months.map(([y,m],mi)=>{const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();
+ return `<div class="cal-box${S.dev==='mobile'&&(S.screen==='project'||S.screen==='create')?' row':''}"><div class="cal-wrap${span>4||(S.dev==='mobile'&&(S.screen==='project'||S.screen==='create')&&span>1)?' gal':''}" data-n="${span}"${span>4?` role="region" aria-label="${span} months, scroll sideways" tabindex="0"`:''}>${months.map(([y,m],mi)=>{const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();
   let cells='';for(let i=0;i<pad;i++)cells+='<span class="d blank"></span>';
   for(let d=1;d<=n;d++){const k=iso(new Date(y,m,d));let c='d';if(k===s)c+=' s';else if(k===e)c+=' e';else if(k>s&&k<e)c+=' in';if(cks.has(k)&&k!==s&&k!==e)c+=' c';if(dn.has(k))c+=' done';
    const lab=`${MONTHS[m]} ${d}${k===s?', start':k===e?', finish':''}`;
