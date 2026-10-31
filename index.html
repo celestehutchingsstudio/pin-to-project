@@ -1072,6 +1072,9 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .pin-info:not(.m) .pi-desc{margin-top:8px}
 .pin-info:not(.m) .pi-desc + .pi-visit{margin-top:16px}
 .pi-visit{border-radius:16px}
+.pi-by span{text-transform:none;letter-spacing:0;font-weight:var(--fw-semi)}
+.ttab{min-width:32px;text-align:center}
+.lightbox .dots{gap:0}.lightbox .dots button{width:32px;height:32px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1582,7 +1585,7 @@ function lightbox(m){const p=proj();const L=S.lightbox;let src,title,sub,info=''
  else if(L.kind==='hero'){src=p.cover;title=p.title;sub='Finished '+(p.finished||'');}
  else{list=finPhotos(p);i=L.i;const x=list[i];src=x.img;title=`Step ${i+1} · ${x.t}`;canNav=true;const s=p.steps[i];
   sub=`${(s.meta||'').split(' · ')[0]||'Step'}${s.meta?', ':''}${s.dur.replace('About ','about ')}.${s.date?' Photo added '+s.date+'.':''}`;
-  info=`${s.video?`<span class="lab" style="color:#fff">Reference</span><span>${esc(s.video)}</span>`:''}${p.id==='stamps'?`<span class="lab" style="color:#fff;margin-top:6px">Materials for this step</span><span>${i===2?'DMC floss: white, 3 strands · Blue linen, 30 × 30 cm · 7 in embroidery hoop · Embroidery needle, size 7':i===1?'Water-soluble transfer pen · Blue linen, 30 × 30 cm':i===0?'Pattern PDF · Blue linen, 30 × 30 cm':i===3?'DMC floss: white, cream · Embroidery needle, size 7':'Iron · Towel'}</span>`:''}`;}
+  info=`${s.video?`<span class="lab" style="color:#fff">Reference</span><span>${esc(s.video)}</span>`:''}${p.id==='stamps'?`<span class="lab" style="color:#fff;margin-top:8px">Materials for this step</span><span>${i===2?'DMC floss: white, 3 strands · Blue linen, 30 × 30 cm · 7 in embroidery hoop · Embroidery needle, size 7':i===1?'Water-soluble transfer pen · Blue linen, 30 × 30 cm':i===0?'Pattern PDF · Blue linen, 30 × 30 cm':i===3?'DMC floss: white, cream · Embroidery needle, size 7':'Iron · Towel'}</span>`:''}`;}
  return `<div class="lightbox" role="dialog" aria-label="${esc(title)}"><div class="lb-top"><button class="ib" data-a="closeLb" aria-label="Close">${I('x')}</button><span class="t">${esc(p&&L.kind!=='pin'?p.title:title)}</span><button class="ib" data-a="toastMsg" data-v="Photo link copied" aria-label="Share">${I('share')}</button></div>
  <div class="lb-img">${canNav&&!m?`<button class="ib" data-a="lbPrev" ${i===0?'disabled':''} aria-label="Previous photo">${I('left')}</button>`:''}${img(src,title)}${canNav&&!m?`<button class="ib" data-a="lbNext" ${i===list.length-1?'disabled':''} aria-label="Next photo">${I('right')}</button>`:''}</div>
  ${canNav?`<div class="dots">${list.map((_,k)=>`<button data-a="lbGo" data-i="${k}" aria-current="${k===i}" aria-label="Photo ${k+1}"></button>`).join('')}</div>`:''}
