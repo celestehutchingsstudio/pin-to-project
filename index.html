@@ -349,7 +349,7 @@ textarea.inp{min-height:80px;resize:vertical}
 .cal button.d:active{transform:scale(.9)}
 .cal .d.in{background:var(--subtle);border-radius:0}
 .cal .d.s,.cal .d.e{background:var(--sel);color:var(--on-sel);border-radius:var(--r-400);font-weight:700}
-.cal .d.c{box-shadow:inset 0 0 0 2px var(--accent);border-radius:var(--r-400);font-weight:700}
+.cal .d.c{box-shadow:inset 0 0 0 2px var(--fg);border-radius:var(--r-400);font-weight:700}
 .cal .d.done{position:relative}
 .cal .d.done::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:var(--r-400);background:var(--ok)}
 .cal .d.blank{visibility:hidden}
@@ -1277,7 +1277,7 @@ function setDate(t,k,v){const isP=t==='proj';const d=isP?proj():S.draft;if(!v)re
  d.preset=[6,13,29].includes(diff(d.start,d.end))?{6:'week',13:'2w',29:'month'}[diff(d.start,d.end)]:'custom';d.calM=null;d.pick='start';render();
  if(isP){d.activity.unshift({t:`Changed the timeline to ${fmt(d.start)} – ${fmt(d.end)}`,d:'Today'});toast(`Timeline updated: ${fmt(d.start)} – ${fmt(d.end)}`);}}
 function calHelp(p){return `<span class="help">${p.pick==='end'?`Start is ${fmt(p.start)}. Now click the end date.`:'Or click a start date, then an end date, on the calendar.'}</span>`;}
-function legend(){return `<div class="keyd"><i style="background:var(--sel)"></i>Start and finish <i style="box-shadow:inset 0 0 0 2px var(--accent)"></i>Check-in</div>`;}
+function legend(){return `<div class="keyd"><i style="background:var(--sel)"></i>Start and finish <i style="box-shadow:inset 0 0 0 2px var(--fg)"></i>Check-in</div>`;}
 
 /* ============ DESKTOP ============ */
 function rail(){const a=S.screen;const cur=x=>a===x||(x==='board'&&a==='saved')||(x==='hub'&&['project','finished','overview'].includes(a))?'aria-current="page"':'';
