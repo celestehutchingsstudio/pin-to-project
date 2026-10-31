@@ -158,7 +158,7 @@ textarea.inp{min-height:80px;resize:vertical}
 .inp:focus{outline:none;border-color:var(--fg);box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
 .inp:disabled{background:var(--disabled-bg);color:var(--disabled);border-color:var(--disabled-bg);cursor:not-allowed}
 .inp.err{border:2px solid var(--err);padding:11px 15px}
-.inp::placeholder{color:var(--fg3)}
+.inp::placeholder{color:var(--ph);opacity:1}
 .help{font-size:var(--fs-100);color:var(--fg2)}
 .err-msg{font-size:var(--fs-100);color:var(--err-text);font-weight:var(--fw-semi);display:flex;gap:4px;align-items:center}
 .search{display:flex;align-items:center;gap:8px;height:48px;padding:0 16px;border-radius:var(--r-m);background:var(--subtle);transition:background .12s,box-shadow .12s;width:100%}
@@ -339,8 +339,8 @@ textarea.inp{min-height:80px;resize:vertical}
 .stile .ph-txt{display:grid;place-items:center;height:100%;font-weight:700;color:var(--fg3);font-size:var(--fs-500)}
 .cal-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
 .cal{border:1px solid var(--line);border-radius:var(--r-m);padding:12px}
-.cal h4{margin:0 0 8px;font-size:var(--fs-300);display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
-.cal h4 span{flex:1;text-align:center}
+.cal .cal-h{margin:0 0 8px;font-size:var(--fs-300);display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+.cal .cal-h span{font-weight:600;flex:1;text-align:center}
 .cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:var(--fs-100);font-variant-numeric:tabular-nums}
 .cal .dn{color:var(--fg2);font-weight:var(--fw-semi);padding:4px 0}
 .cal .d{height:40px;font-size:var(--fs-200);display:grid;place-items:center;border-radius:var(--r-400);transition:background .1s}
@@ -1093,6 +1093,28 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .cal button.d.past,.dp-d:disabled{color:var(--fg3);cursor:default;opacity:.5}
 .cal button.d.past:hover{background:none}
 .ib:disabled{opacity:.35;cursor:default}
+
+/* r45 accessibility + legibility: placeholders, search bars, pin open target */
+:root{--ph:#55554f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ph:#c2c0bb}}
+:root[data-theme="dark"]{--ph:#c2c0bb}
+input::placeholder,textarea::placeholder{color:var(--ph);opacity:1}
+.search{color:var(--fg)}
+.search > span{display:flex;color:var(--fg);flex:none}
+.search input{font:inherit;font-size:var(--fs-300);line-height:1.4;color:var(--fg);font-weight:400}
+.search input::placeholder{color:var(--ph);opacity:1}
+.search input[type=search]::-webkit-search-decoration,.search input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+.search.outline:focus-within{border-color:var(--fg)}
+.search .ib.sm{width:32px;height:32px}
+.pin .ph{position:relative}
+.pin-open{position:absolute;inset:0;z-index:0;border:0;padding:0;margin:0;background:transparent;border-radius:inherit;cursor:zoom-in}
+.pin-open:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--ring-inner),inset 0 0 0 4px var(--ring)!important}
+.pin .ph .ov{z-index:1}
+@media (forced-colors:active){.search:focus-within,.pin-open:focus-visible{outline:2px solid CanvasText}}
+.search input:focus-visible{box-shadow:none!important}
+.addc .search:focus-within{border-color:var(--fg);box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
+.pin .ph:has(> .pin-open:focus-visible){box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
+.ttabs{padding-top:4px;padding-bottom:4px;padding-left:4px;margin-left:-4px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1303,7 +1325,7 @@ function bpMenu(id){const cur=S.savedTo[id]||BOARD_NAMES[0];return `${S.pop==='b
 function pinCard(id,o={}){const p=PINS[id];const saved=S.saved.has(id);const sel=S.selected.has(id);
  if(o.select) return `<button class="pin ${sel?'sel':''}" data-a="toggleSel" data-id="${id}" aria-pressed="${sel}" aria-label="Select ${esc(p.t)}"><div class="ph" ${phStyle(id)}>${img(id,p.t)}<span class="selmark">${sel?I('check','sm'):''}</span></div></button>`;
  if(o.pick) return `<button class="pin" data-a="${o.pick}" data-id="${id}" aria-label="Use ${esc(p.t)}"><div class="ph" ${phStyle(id)}>${img(id,p.t)}<div class="ov"><div class="top"><span class="btn btn-primary sm">${o.pickLabel||'Use'}</span></div><div class="bot"></div></div></div></button>`;
- return `<div class="pin ${S.pop==='bp'+id?'menu-open':''} ${o.fresh?'fresh':''}"><div class="ph" ${phStyle(id)} data-a="openPin" data-id="${id}" role="button" tabindex="0" aria-label="Open ${esc(p.t)}">${img(id,p.t)}
+ return `<div class="pin ${S.pop==='bp'+id?'menu-open':''} ${o.fresh?'fresh':''}"><div class="ph" ${phStyle(id)} data-a="openPin" data-id="${id}"><button class="pin-open" data-a="openPin" data-id="${id}" aria-label="Open ${esc(p.t)}"></button>${img(id,p.t)}
  <div class="ov"><div class="top">${saved?'<span></span>':boardPicker(id)}<button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
  <div class="bot"><button class="src" data-a="visit" data-id="${id}">${I('link','sm')}${esc(p.src)}</button><span style="display:flex;gap:8px"><button class="ib sm glass" data-a="share" aria-label="Share">${I('share','sm')}</button><button class="ib sm glass" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more','sm')}</button></span></div></div></div>
  ${bpMenu(id)}${o.cap?`<div class="cap"><span>${esc(p.t)}</span></div>`:''}</div>`;}
@@ -1339,7 +1361,7 @@ function calendar(p,o={}){const s=p.start,e=p.end;const cks=new Set(checkins(p))
    const lab=`${MONTHS[m]} ${d}${k===s?', start':k===e?', finish':''}`;
    cells+=t?`<button class="${c}${t==='draft'&&k<TODAY?' past':''}" data-a="pickDay" data-t="${t}" data-v="${k}" aria-label="${lab}" aria-pressed="${k===s||k===e}" ${t==='draft'&&k<TODAY?'disabled':''}>${d}</button>`:`<span class="${c}">${d}</span>`;}
   const prev=t&&mi===0?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="-1" aria-label="Previous month" ${t==='draft'&&y*12+m<=thisM()?'disabled':''}>${I('left','sm')}</button>`:'';const next=t&&mi===lastI?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="1" aria-label="Next month">${I('right','sm')}</button>`:'';
-    return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${(()=>{const perRow=S.dev==='mobile'?1:2;if(S.dev==='mobile'&&(S.screen==='project'||S.screen==='create'))return '';const vert=span<=4&&span>perRow;
+    return `<div class="cal"><div class="cal-h">${prev}<span>${MONTHS[m]} ${y}</span>${next}</div><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${(()=>{const perRow=S.dev==='mobile'?1:2;if(S.dev==='mobile'&&(S.screen==='project'||S.screen==='create'))return '';const vert=span<=4&&span>perRow;
   const btn=vert?`<button class="cal-arrow" data-a="calDown" aria-label="Scroll down to see all ${span} months">${I('down','lg')}</button>`:span>4?`<button class="cal-arrow" data-a="calSide" aria-label="Scroll sideways to see all ${span} months">${I('right','lg')}</button>`:'';
   return `<div class="cal-rail">${btn}</div>`;})()}</div>${span>4&&!(S.dev==='mobile'&&(S.screen==='project'||S.screen==='create'))?`<p class="cal-more">Scroll sideways to see all ${span} months</p>`:''}`;}
 const fmtL=v=>{const d=D(v);return `${MON[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;};
@@ -1366,14 +1388,14 @@ function rail(){const a=S.screen;const cur=x=>a===x||(x==='board'&&a==='saved')|
  ${b('navHome','home','Home','home')}${b('soon','compass','Explore','',`data-v="Explore"`,true)}${b('navBoard','board','Your boards','board')}${b('navHub','projects','Projects','hub')}
  ${b('toggleCreate','plusSq','Create','',S.pop==='create'?'aria-current="page"':'')}${b('soon','bell','Notifications','',`data-v="Notifications"`,true)}${b('soon','chat','Messages','',`data-v="Messages"`)}${b('soon','tune','Customize','',`data-v="Customize"`)}
  <span class="spacer"></span>${b('soon','gear','Settings','',`data-v="Settings"`)}</nav>`;}
-function topbar(){return `<div class="d-top"><label class="search pill" style="flex:1"><span>${I('search')}</span><input id="q-top" placeholder="${['saved','board'].includes(S.screen)?'Search your Pins':'Search'}" aria-label="Search" data-k="searchTop">${['saved','board'].includes(S.screen)?`<button class="ib sm" data-a="soon" data-v="Voice search" aria-label="Search by voice">${I('mic')}</button>`:''}</label>
+function topbar(){return `<div class="d-top"><label class="search pill" style="flex:1"><span>${I('search')}</span><input id="q-top" type="search" placeholder="${['saved','board'].includes(S.screen)?'Search your Pins':'Search'}" aria-label="${['saved','board'].includes(S.screen)?'Search your Pins':'Search'}" data-k="searchTop">${['saved','board'].includes(S.screen)?`<button class="ib sm" data-a="soon" data-v="Voice search" aria-label="Search by voice">${I('mic')}</button>`:''}</label>
  <button class="me" data-a="navHub" aria-label="Your profile">${av('June')}${I('down','sm')}</button></div>`;}
-function createFlyout(){return `<div class="click-catch" data-a="closePop"></div><div class="cpanel" role="menu" aria-label="Create">
+function createFlyout(){return `<div class="click-catch" data-a="closePop"></div><div class="cpanel" role="dialog" aria-label="Create">
  <div class="cpanel-h"><h3>Create</h3><button class="ib" data-a="closePop" aria-label="Close">${I('x')}</button></div>
- <button class="mrow" data-a="soon" data-v="Pin" role="menuitem"><span class="ic">${I('image','lg')}</span><span><b>Pin</b><span class="s">Post photos, videos or links</span></span></button>
- <button class="mrow" data-a="soon" data-v="Board" role="menuitem"><span class="ic">${I('board','lg')}</span><span><b>Board</b><span class="s">Organize a collection of Pins</span></span></button>
- <button class="mrow" data-a="soon" data-v="Collage" role="menuitem"><span class="ic">${I('collage','lg')}</span><span><b>Collage</b><span class="s">Mix and match ideas</span></span></button>
- <button class="mrow feat" data-a="newBlank" role="menuitem"><span class="ic">${I('projects','lg')}</span><span><b>Project <span class="tag new">New</span></b><span class="s">Turn Pins into a step-by-step plan</span></span></button></div>`;}
+ <button class="mrow" data-a="soon" data-v="Pin"><span class="ic">${I('image','lg')}</span><span><b>Pin</b><span class="s">Post photos, videos or links</span></span></button>
+ <button class="mrow" data-a="soon" data-v="Board"><span class="ic">${I('board','lg')}</span><span><b>Board</b><span class="s">Organize a collection of Pins</span></span></button>
+ <button class="mrow" data-a="soon" data-v="Collage"><span class="ic">${I('collage','lg')}</span><span><b>Collage</b><span class="s">Mix and match ideas</span></span></button>
+ <button class="mrow feat" data-a="newBlank"><span class="ic">${I('projects','lg')}</span><span><b>Project <span class="tag new">New</span></b><span class="s">Turn Pins into a step-by-step plan</span></span></button></div>`;}
 function dShell(inner,o={}){return `<div class="d-wrap${S.pop==='create'?' docked':''}">${rail()}<div class="d-main">${o.top===false?'':topbar()}${inner}</div></div>${S.pop==='create'?createFlyout():''}`;}
 
 function dHome(){const pins=feedPins();
@@ -1389,7 +1411,7 @@ function commentRow(c,i,scope){const liked=(scope==='fin'?S.finLiked:S.liked).ha
  return `<div class="comment ${c.failed?'failed':''}">${av(c.who,c.av)}<div class="body"><p style="margin:0"><b>${esc(c.who)}</b> ${esc(c.t)}</p>
  <div class="acts">${c.failed?`<span style="color:var(--accent);font-weight:600">Not posted</span><button data-a="retryComment" data-scope="${scope}" data-i="${i}">Retry</button>`:`<span>${esc(c.ago)}</span><button data-a="replyTo" data-scope="${scope}" data-i="${i}">Reply</button>
  <button class="${liked?'on':''}" data-a="likeComment" data-scope="${scope}" data-i="${i}" aria-pressed="${liked}">${I('heart','sm')}${(c.likes||0)+(liked?1:0)}</button>`}</div>
- ${S.reply===scope+i?`<form class="addc" data-f="addReply" data-scope="${scope}" data-i="${i}" style="margin-top:8px"><label class="search pill"><input id="r-${scope}${i}" placeholder="Reply to ${esc(c.who)}" autocomplete="off"><button class="ib sm" aria-label="Send reply">${I('send','sm')}</button></label></form>`:''}
+ ${S.reply===scope+i?`<form class="addc" data-f="addReply" data-scope="${scope}" data-i="${i}" style="margin-top:8px"><label class="search pill"><input id="r-${scope}${i}" placeholder="Reply to ${esc(c.who)}" aria-label="Reply to ${esc(c.who)}" autocomplete="off"><button class="ib sm" aria-label="Send reply">${I('send','sm')}</button></label></form>`:''}
  ${(c.replies||[]).map(r=>`<div class="comment" style="margin-top:8px">${av('June')}<div class="body"><p style="margin:0"><b>June</b> ${esc(r)}</p><div class="acts"><span>Just now</span></div></div></div>`).join('')}</div></div>`;}
 
 function makeCard(id){return `<div class="make-row"><span class="tipwrap"><button class="btn btn-secondary" data-a="makeThis" data-id="${id}" aria-describedby="tip-make">Make this</button><span class="tip" role="tooltip" id="tip-make">Turn this into a project</span></span></div>`;}
@@ -1424,7 +1446,7 @@ function dBoard(){const sel=S.select==='board';const b=bd();
  <div class="bh-act"><button class="btn btn-secondary" data-a="toastMsg" data-v="Board link copied">${I('share','sm')}Share</button><button class="ib bh-more" data-a="soon" data-v="Board options" aria-label="More options">${I('more')}</button></div></div>
  <div class="bh-people">${av('June')}<button class="bh-add" data-a="soon" data-v="Invite collaborators" aria-label="Invite collaborators">${I('userPlus','sm')}</button></div>
  <div class="b-tools">${boardTools()}</div></div>
- <div class="bh-search"><label class="search outline"><span>${I('search')}</span><input id="q-board" placeholder="Search this board"></label><button class="ib" data-a="soon" data-v="Sort and filter" aria-label="Sort and filter">${I('sliders','lg')}</button></div>
+ <div class="bh-search"><label class="search outline"><span>${I('search')}</span><input id="q-board" type="search" placeholder="Search this board" aria-label="Search this board"></label><button class="ib" data-a="soon" data-v="Sort and filter" aria-label="Sort and filter">${I('sliders','lg')}</button></div>
  ${sel?`<p style="margin:0 0 12px;color:var(--fg2)">Pick the Pins this project should use. Pinterest builds the steps and materials from them.</p>`:''}
  ${grid(bd().pins,(id)=>pinCard(id,{select:sel}))}${sel?selBar('board'):''}<button class="fab" data-a="soon" data-v="Add to board" aria-label="Add to board">${I('plus','lg')}</button></div>`);}
 
@@ -1480,7 +1502,7 @@ function ideasPanel(m){const t=S.ideasTab;let body='';
  if(t==='boards'){const b=SAVED[S.ideasBoard]||SAVED[0];body=`<div class="boards-row">${SAVED.map((x,i)=>`<button class="bthumb" data-a="ideasBoard" data-i="${i}" aria-pressed="${S.ideasBoard===i}"><span class="im">${img(x.img)}</span>${esc(x.n)}</button>`).join('')}</div>${grid(b.pins,(id)=>pinCard(id,{pick:'pickIdea',pickLabel:S.draft&&S.draft.title?'Add':'Use'}),{cols:2})}`;}
  else if(t==='brand') body=`<div class="empty" style="padding:24px"><h3 style="font-size:var(--fs-300)">No brand kit yet</h3><p>Add your colours, fonts and logo to reuse them across projects.</p><button class="btn btn-secondary sm" data-a="soon" data-v="Brand kit">Set up brand kit</button></div>`;
  else body=`${grid(FEED.slice(0,14),(id)=>pinCard(id,{pick:'pickIdea',pickLabel:S.draft&&S.draft.title?'Add':'Use'}),{cols:2})}`;
- return `<aside class="ideas" aria-label="Find ideas"><label class="search pill"><span>${I('search')}</span><input id="q-ideas" placeholder="Search for project ideas"></label>
+ return `<aside class="ideas" aria-label="Find ideas"><label class="search pill"><span>${I('search')}</span><input id="q-ideas" type="search" placeholder="Search for project ideas" aria-label="Search for project ideas"></label>
  <div class="tabs" role="tablist">${[['more','More ideas'],['boards','Your boards'],['brand','Brand kit']].map(([k,l])=>`<button class="tab" role="tab" data-a="ideasTab" data-v="${k}" aria-selected="${t===k}">${l}</button>`).join('')}</div>${body}</aside>`;}
 /* ----- pick your Pins (round 24): first step for any project not started from a Pin ----- */
 function pickBody(m){const src=S.pickSrc||'boards';const bi=S.pickBoard||0;const ids=src==='boards'?SAVED[bi].pins:FEED.slice(0,24);
@@ -1600,10 +1622,10 @@ function finBody(p,m){const ph=finPhotos(p).filter(x=>!S.finSearch||x.t.toLowerC
  ${pin?`<button class="credit" data-a="openPin" data-id="${p.pinId}">${img(p.pinId)}<span style="flex:1;min-width:0">Made from a Pin by <b>${esc(pin.by)}</b>: ${esc(pin.t)}</span>${I('link','sm')}</button>`:''}
  <div class="sec"><h2 class="sec-title" style="font-size:var(--fs-300)">Project timeline</h2><span>${fmt(p.start)} – ${esc(p.finished)} · ${p.id==='stamps'?13:diff(p.start,p.end)} days · ${p.steps.length} steps</span>
  <span class="help">Steps done: ${p.steps.map(s=>`${s.t.split(' ')[0]} ${s.date||''}`).join(' · ')}</span></div></div></div>
- <label class="search" style="margin:28px 0 16px;max-width:${m?'none':'420px'}"><span>${I('search')}</span><input id="q-fin" data-k="finSearch" value="${esc(S.finSearch)}" placeholder="Search this project"></label>
+ <label class="search" style="margin:28px 0 16px;max-width:${m?'none':'420px'}"><span>${I('search')}</span><input id="q-fin" data-k="finSearch" value="${esc(S.finSearch)}" placeholder="Search this project" aria-label="Search this project" type="search"></label>
  <div class="photos">${ph.map(x=>`<button class="photo" data-a="lb" data-i="${x.i}"><span class="im">${img(x.img,x.t)}</span><small>Step ${x.i+1}</small><b>${esc(x.t)}</b></button>`).join('')||'<span class="help">No steps match.</span>'}</div>
  <div class="sec" style="margin-top:32px"><h2 class="sec-title" style="font-size:var(--fs-300)">${S.fin.length} comments</h2>${S.fin.map((c,i)=>commentRow(c,i,'fin')).join('')}
- <form class="addc" data-f="finComment">${av('June')}<label class="search pill"><input id="c-fin" placeholder="Add a comment" autocomplete="off"><button class="ib sm" aria-label="Post comment">${I('send','sm')}</button></label></form></div>
+ <form class="addc" data-f="finComment">${av('June')}<label class="search pill"><input id="c-fin" placeholder="Add a comment" aria-label="Add a comment" autocomplete="off"><button class="ib sm" aria-label="Post comment">${I('send','sm')}</button></label></form></div>
  <div class="sec-h"><h2>More to explore</h2></div>${grid(['p02','p09','p24','p06','p23','p26','p13','p03'],(id)=>pinCard(id))}`;}
 function dFinished(){const p=proj();
  return dShell(`<div class="d-body"><div class="fin-head"><h1>${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span><span style="flex:1"></span>
@@ -1640,10 +1662,10 @@ function mBoard(){const b=bd();
  <div class="m-body"><div class="bh m"><div class="bh-title"><h1>${esc(b.n)}</h1><div class="bh-meta"><span class="tag">${I('globe','sm')}Public board</span><span>· ${b.count} Pins</span></div></div>
  <div class="bh-people">${av('June')}<button class="bh-add" data-a="soon" data-v="Invite collaborators" aria-label="Invite collaborators">${I('userPlus','sm')}</button></div>
  <div class="b-tools">${boardTools()}</div></div>
- <div class="bh-search m"><label class="search outline"><span>${I('search')}</span><input id="q-mboard" placeholder="Search this board"></label><button class="ib" data-a="soon" data-v="Sort and filter" aria-label="Sort and filter">${I('sliders','lg')}</button></div>
+ <div class="bh-search m"><label class="search outline"><span>${I('search')}</span><input id="q-mboard" type="search" placeholder="Search this board" aria-label="Search this board"></label><button class="ib" data-a="soon" data-v="Sort and filter" aria-label="Sort and filter">${I('sliders','lg')}</button></div>
  ${S.select==='board'?`<p style="margin:0 0 12px;color:var(--fg2)">Pick the Pins this project should use. Pinterest builds the steps and materials from them.</p>`:''}${grid(b.pins,(id)=>pinCard(id,{select:S.select==='board'}))}${S.select==='board'?selBar('board'):''}</div>`;}
 function mHub(){return `${mStatus()}<div class="m-head" style="gap:12px"><button class="me" data-a="soon" data-v="Your profile" aria-label="Your profile">${av('June')}</button><div class="tabs" role="tablist" style="flex:1;gap:16px"><button class="tab" role="tab" data-a="navHome">Pins</button><button class="tab" role="tab" data-a="navBoard">Boards</button><button class="tab" role="tab" aria-selected="true">Projects</button></div><button class="ib" data-a="soon" data-v="Settings" aria-label="Settings">${I('gear')}</button></div>
- <div class="m-body"><div style="display:flex;gap:8px;align-items:center"><label class="search outline" style="flex:1"><span>${I('search')}</span><input id="q-mhub" placeholder="Search your projects"></label><button class="ib" data-a="mCreate" aria-label="New project">${I('plus','lg')}</button></div>${hubBody(true)}</div>`;}
+ <div class="m-body"><div style="display:flex;gap:8px;align-items:center"><label class="search outline" style="flex:1"><span>${I('search')}</span><input id="q-mhub" type="search" placeholder="Search your projects" aria-label="Search your projects"></label><button class="ib" data-a="mCreate" aria-label="New project">${I('plus','lg')}</button></div>${hubBody(true)}</div>`;}
 function mCreate(){const d=S.draft;return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeCreate" aria-label="Close">${I('x')}</button><h1>${S.editing?'Edit project':'New project'}</h1><button class="ib" data-a="createMore" aria-label="More options">${I('more')}</button><button class="btn btn-primary sm" data-a="next" ${d.creating?'aria-disabled="true"':''}>${d.creating?'<span class="spin"></span>':S.editing?'Save':'Create project'}</button></div>
  ${S.pop==='createmore'?`<div class="click-catch" data-a="closePop"></div><div class="menu" style="right:60px;top:100px"><button class="mi" data-a="later">Save for later</button><button class="mi" data-a="openIdeas">Find ideas</button></div>`:''}
  <div class="cp m">${createForm(true)}</div>`;}
