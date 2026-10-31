@@ -963,6 +963,21 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .dev-mobile .dates .dp:last-child .dp-pop{right:0}
 .dev-mobile .dates .dp:first-child .dp-pop{left:0}
 .dev-mobile .dp-btn{padding:12px}
+/* round 29: Project steps gallery under the roadmap */
+.ps-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ps-tag{font-size:var(--fs-200);padding:6px 12px;border-radius:8px;gap:6px;font-weight:var(--fw-semi)}
+.ps-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:24px 16px;margin-top:16px}
+.ps-grid.m{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+.stile.ps{gap:0}
+.stile.ps .im{aspect-ratio:289/184;border-radius:16px}
+.stile.ps .cap{margin-top:12px}
+.stile.ps .cap small{font-size:var(--fs-200);color:var(--fg2);margin-bottom:2px}
+.stile.ps .cap b{font-size:var(--fs-300);line-height:1.25}
+.ps-grid.m .stile.ps .cap b{font-size:var(--fs-200)}
+.stile.ps.add .im{border:2px dashed var(--fg2);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:var(--fs-300)}
+.stile.ps.add .im svg{width:32px;height:32px}
+.stile.ps .ps-form{display:grid;place-items:center;padding:12px;background:var(--subtle)}
+.stile.ps form span{margin-top:8px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1375,6 +1390,10 @@ function moveStep(i,to){const p=proj();const x=p.steps[i];const c=canMove(p,i,to
 function rcard(p,i,k){const x=p.steps[i];const open=S.moveMenu===i;
  return `<div class="rcard ${open?'menu-open':''}" draggable="true" data-drag="${i}"><button class="rmain" data-a="gotoStep" data-i="${i}"><b>Step ${i+1} · ${esc(x.t)}</b><span>${x.done?'Done '+esc(x.date||''):esc(x.dur)}</span></button><button class="ib sm rmove" data-a="moveMenu" data-i="${i}" aria-label="Move Step ${i+1}" aria-haspopup="menu" aria-expanded="${open}">${I('more','sm')}</button>
  ${open?`<div class="rmenu" role="menu" aria-label="Move Step ${i+1}">${COLS.filter(([t])=>t!==k).map(([t,l])=>{const c=canMove(p,i,t);return `<button role="menuitem" data-a="mv" data-i="${i}" data-to="${t}" ${c.ok?'':'aria-disabled="true"'}><span>Move to ${l}</span>${c.ok?'':`<small>${esc(c.why)}</small>`}</button>`;}).join('')}</div>`:''}</div>`;}
+function projSteps(p,m){const tag=p.pinId?'Suggested from the Pin’s tutorial':p.boardName?'Suggested from your board':'';
+ return `<div class="sec ps-sec"><h2 class="sec-title ps-h">Project steps${tag?`<span class="tag ps-tag">${I('sparkle','sm')}${tag}</span>`:''}</h2>
+ <div class="ps-grid${m?' m':''}">${p.steps.map((s,i)=>`<button class="stile ps" data-a="gotoStep" data-i="${i}" aria-label="Step ${i+1}: ${esc(s.t)}"><span class="im">${stepImg(p,s,i)}</span><span class="cap"><small>Step ${i+1}</small><b>${esc(s.t)}</b></span></button>`).join('')}
+ ${p.addingStep?`<form class="stile ps" data-f="addProjStep"><div class="im ps-form"><input class="inp" id="f-pstep" placeholder="Step name" autocomplete="off" aria-label="Step name"></div><span style="display:flex;gap:8px"><button class="btn btn-dark xs">Add</button><button type="button" class="btn btn-ghost xs" data-a="cancelProjStep">Cancel</button></span></form>`:`<button class="stile ps add" data-a="addProjStep"><span class="im">${I('plus','lg')}<b>Add step</b></span></button>`}</div></div>`;}
 function roadmap(p){ensureWip(p);
  return `<div class="road">${COLS.map(([k,h])=>{const ids=p.steps.map((x,i)=>i).filter(i=>stepCol(p.steps[i])===k);
   return `<div class="col" data-col="${k}" role="group" aria-label="${h}"><h3>${h}</h3>${ids.map(i=>rcard(p,i,k)).join('')||'<span class="help rempty">Nothing here</span>'}</div>`;}).join('')}</div><p class="help road-hint">Drag a step to another column, or use its ⋯ button. Several steps can be in progress at once. Steps are completed in order.</p>`;}
@@ -1427,7 +1446,7 @@ function overviewSide(p,m){const t=S.side;const dn=p.steps.filter(s=>s.done&&s.d
  return `<div class="side-card"><div class="tabs" role="tablist">${[['overview','Overview'],['activity','Activity'],['files','Files']].map(([k,l])=>`<button class="tab" role="tab" data-a="side" data-v="${k}" aria-selected="${t===k}">${l}</button>`).join('')}</div>${body}</div>`;}
 function dProject(){const p=proj();
  return dShell(`<div class="cp-top"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1>${statusPill(p)}<button class="btn btn-secondary" data-a="editProj">Edit</button><span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}${S.offline?'Saved on this device':'Saved'}</span></div>
- <div class="pp"><div class="pp-main">${nextCard(p,false)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>${overviewSide(p,false)}</div>`,{top:false});}
+ <div class="pp"><div class="pp-main">${nextCard(p,false)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,false)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>${overviewSide(p,false)}</div>`,{top:false});}
 
 /* ----- finished ----- */
 function finPhotos(p){return p.steps.map((s,i)=>({img:s.img||p.cover,t:s.t,i,date:s.date}));}
@@ -1493,7 +1512,7 @@ function mOverview(){const p=proj();return `${mStatus()}<div class="m-head"><but
  ${mTabs('overview')}<div class="m-body" style="padding-top:0"><div style="border-radius:var(--r-l);overflow:hidden;aspect-ratio:358/478">${img(p.cover,p.title)}</div>
  <div style="display:flex;align-items:center;gap:8px;margin:16px 0 8px"><h1 style="font-size:var(--fs-400);margin:0;flex:1">${esc(p.title)}</h1>${statusPill(p)}</div>${overviewSide(p,true)}</div>`;}
 function mRoadmap(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1><span class="autosave" role="status" title="Changes save automatically" aria-label="Saved">${I('check','sm')}</span><button class="btn btn-secondary sm" data-a="editProj">Edit</button></div>
- ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px">${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>`;}
+ ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px">${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,true)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>`;}
 function mFinished(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="navHub" aria-label="Back to projects">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="shareMenu" aria-label="Share">${I('share')}</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:56px;top:100px')}${finMore('right:12px;top:100px')}</div>
  <div class="m-body" style="padding-top:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h1 style="font-size:var(--fs-500);margin:0">${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help" style="width:100%">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span></div>${finBody(p,true)}</div>`;}
 
@@ -1622,6 +1641,7 @@ const A={
  saveProj:()=>{S.offline?toast('You’re offline. Changes will sync when you reconnect.',{icon:'wifi'}):toast('Project saved');},
  continue:()=>{const p=proj();S.open=nextIdx(p);render();const el=$('#step-'+S.open);el&&el.scrollIntoView({behavior:'smooth',block:'center'});},
  toggleStep:el=>{const i=+el.dataset.i;S.justDone=null;S.open=S.open===i?null:i;S.ask=null;render();},
+ addProjStep:()=>{proj().addingStep=true;render();$('#f-pstep').focus();},cancelProjStep:()=>{proj().addingStep=false;render();},
  gotoStep:el=>{const i=+el.dataset.i;const p=proj();S.focus=i===nextIdx(p)?null:i;S.ask=null;S.justDone=null;render();const x=$('#next-card');x&&x.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});},
  focusNext:()=>{S.focus=null;S.ask=null;render();},
  done:el=>markDone(+el.dataset.i,true),
@@ -1661,6 +1681,7 @@ const FORMS={
   S.offline?toast('Couldn’t post your comment.',{err:true,action:'Retry',fn:()=>{}}):toast('Comment posted');},
  finComment:(f)=>{const t=f.querySelector('input').value.trim();if(!t)return;S.fin.push({who:'June',av:'',t,ago:'Just now',likes:0,failed:S.offline});render();S.offline?toast('Couldn’t post your comment.',{err:true}):toast('Comment posted');},
  addReply:(f)=>{const t=f.querySelector('input').value.trim();if(!t)return;const list=f.dataset.scope==='fin'?S.fin:S.comments[S.pinId];const c=list[+f.dataset.i];(c.replies=c.replies||[]).push(t);S.reply=null;render();toast('Reply posted');},
+ addProjStep:(f)=>{const t=f.querySelector('input').value.trim();if(!t)return;const p=proj();p.steps.push({t,img:null,dur:'About 30 min',meta:'',b:['Describe what to do in this step'],done:false,wip:false,date:''});p.addingStep=false;p.activity&&p.activity.unshift({t:`Added a step: ${t}`,d:'Today'});render();toast(`Added Step ${p.steps.length}: ${t}`);},
  addStep:(f)=>{const t=f.querySelector('input').value.trim();if(!t)return;S.draft.steps.push({t,img:null,dur:'About 30 min',meta:'',b:['Describe what to do in this step'],done:false,date:''});S.draft.adding=false;render();},
  addRef:(f)=>{const t=f.querySelector('input').value.trim();if(!t)return;S.draft.refs.push(t);S.draft.addingRef=false;render();},
  addMat:(f)=>{const t=f.querySelector('input').value.trim();if(!t)return;S.draft.materials.push({t,have:false});S.draft.addingMat=false;render();},
