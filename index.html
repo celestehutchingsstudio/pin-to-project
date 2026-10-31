@@ -1014,6 +1014,13 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .lnk,.link{min-height:32px;display:inline-flex;align-items:center}
 .rbtn .tip,span.tip{font-size:var(--fs-100)}
 .ps-grid.m{margin-top:8px}
+/* round 31: Make this is a single button under Save; the explanation shows on hover or focus */
+.make-row{display:flex;justify-content:flex-end;margin-top:-8px}
+.make-row .btn{gap:8px}
+.make-row .tipwrap .tip{top:auto;bottom:calc(100% + 8px);right:0;font-size:var(--fs-100);padding:8px 12px;border-radius:12px;background:#000;color:#fff;box-shadow:none}
+.m-body .make-row{margin:-8px 0 16px}
+.make-card{display:none}
+.make-row .tipwrap .tip{bottom:auto;top:50%;right:calc(100% + 8px);transform:translateY(-50%)}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1305,7 +1312,7 @@ function commentRow(c,i,scope){const liked=(scope==='fin'?S.finLiked:S.liked).ha
  ${S.reply===scope+i?`<form class="addc" data-f="addReply" data-scope="${scope}" data-i="${i}" style="margin-top:8px"><label class="search pill"><input id="r-${scope}${i}" placeholder="Reply to ${esc(c.who)}" autocomplete="off"><button class="ib sm" aria-label="Send reply">${I('send','sm')}</button></label></form>`:''}
  ${(c.replies||[]).map(r=>`<div class="comment" style="margin-top:8px">${av('June')}<div class="body"><p style="margin:0"><b>June</b> ${esc(r)}</p><div class="acts"><span>Just now</span></div></div></div>`).join('')}</div></div>`;}
 
-function makeCard(id){return `<div class="make-card"><span class="mk-ic">${I('projects')}</span><span class="mk-t"><b>Turn it into a project</b><span>Get steps, materials and a plan from this Pin</span></span><button class="btn btn-secondary" data-a="makeThis" data-id="${id}">Make this</button></div>`;}
+function makeCard(id){return `<div class="make-row"><span class="tipwrap"><button class="btn btn-secondary" data-a="makeThis" data-id="${id}" aria-describedby="tip-make">${I('projects','sm')}Make this</button><span class="tip" role="tooltip" id="tip-make">Turn this into a project</span></span></div>`;}
 function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
  const desc=id==='p27'?'Four botanical postage stamps stitched in white on blue linen. Free pattern and video tutorial on the blog.':`Saved from ${p.src}.`;
  return dShell(`<div class="d-body"><div style="position:relative">
