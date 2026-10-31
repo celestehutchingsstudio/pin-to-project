@@ -1052,6 +1052,26 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .dev-mobile .cal-box.row .cal-wrap.gal::-webkit-scrollbar{display:none}
 .nx-refs{display:flex;flex-direction:column;gap:8px}
 .next.nx .nx-refs .ref{margin:0}
+/* r38: Pin info layout */
+.pin-info{display:flex;flex-direction:column;gap:0}
+.pi-by{display:flex;align-items:center;gap:12px;align-self:flex-start;min-height:32px;border-radius:var(--r-pill);padding:4px 8px 4px 0}
+.pi-by .av{width:24px;height:24px;font-size:var(--fs-100)}
+.pi-by span{font-size:var(--fs-300);text-transform:uppercase;letter-spacing:.01em;color:var(--fg)}
+.pi-by:hover span{text-decoration:underline}
+.pin-info .pi-t{font-size:var(--fs-500);line-height:1.15;font-weight:700;margin:8px 0 16px;letter-spacing:-.01em}
+.pin-info.m .pi-t{font-size:24px}
+.pin-info .make-row{margin:-4px 0 16px}
+.pi-visit{width:100%;min-height:48px;border-radius:var(--r-300,16px);font-size:var(--fs-300);font-weight:500}
+.pi-desc{margin-top:24px}
+.pi-desc h2{margin:0 0 8px;font-size:var(--fs-300);font-weight:700}
+.pi-desc p{margin:0;color:var(--fg2);font-size:var(--fs-300);line-height:1.4}
+.pi-desc p.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pi-more{display:block;margin:4px 0 0 auto;font-weight:700;font-size:var(--fs-300);min-height:32px;padding:0 4px;border-radius:8px}
+.pi-more:hover{text-decoration:underline}
+.pin-info.m{margin:4px 0 16px}
+.pin-info:not(.m) .pi-desc{margin-top:8px}
+.pin-info:not(.m) .pi-desc + .pi-visit{margin-top:16px}
+.pi-visit{border-radius:16px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1344,16 +1364,18 @@ function commentRow(c,i,scope){const liked=(scope==='fin'?S.finLiked:S.liked).ha
  ${(c.replies||[]).map(r=>`<div class="comment" style="margin-top:8px">${av('June')}<div class="body"><p style="margin:0"><b>June</b> ${esc(r)}</p><div class="acts"><span>Just now</span></div></div></div>`).join('')}</div></div>`;}
 
 function makeCard(id){return `<div class="make-row"><span class="tipwrap"><button class="btn btn-secondary" data-a="makeThis" data-id="${id}" aria-describedby="tip-make">Make this</button><span class="tip" role="tooltip" id="tip-make">Turn this into a project</span></span></div>`;}
+function pinDesc(id,p){return id==='p27'?'Four botanical postage stamps stitched in white on blue linen: fuchsia, marguerite, lily of the valley and lilac. The free pattern PDF and a step-by-step chain stitch video are on the blog. A calm weekend project for beginners that frames beautifully for a hallway or reading nook.':`Saved from ${p.src}. ${p.t}, shared by ${p.by}.`;}
+function pinInfo(id,p,m){const desc=pinDesc(id,p);const more=S.descMore===id;const long=desc.length>110;const visit=`<button class="btn btn-secondary pi-visit" data-a="visit" data-id="${id}">Visit site</button>`;
+ return `<div class="pin-info${m?' m':''}"><button class="pi-by" data-a="toastMsg" data-v="Opens ${esc(p.by)}’s profile">${av(p.by,'b')}<span>${esc(p.by)}</span></button>
+ <h1 class="pi-t">${esc(p.t)}</h1>${m?'':makeCard(id)}
+ ${m?visit:''}
+ <div class="pi-desc"><h2>Description</h2><p class="${more||!long?'':'clamp'}" id="pi-desc-${id}">${esc(desc)}</p>${long?`<button class="pi-more" data-a="descMore" data-id="${id}" aria-expanded="${more}" aria-controls="pi-desc-${id}">${more?'See less':'See more'}</button>`:''}</div>${m?'':visit}</div>`;}
 function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
- const desc=id==='p27'?'Four botanical postage stamps stitched in white on blue linen. Free pattern and video tutorial on the blog.':`Saved from ${p.src}.`;
  return dShell(`<div class="d-body"><div style="position:relative">
  <article class="closeup"><div class="imgc">${img(id,p.t)}<button class="ib glass" data-a="back" aria-label="Back" style="position:absolute;left:16px;top:16px">${I('back')}</button><div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
  <div class="side"><div class="bar"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="focusComment" aria-label="Comment">${I('chat')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><button class="ib" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button>
  <span style="flex:1"></span><button class="boardpick" data-a="soon" data-v="Pick a board" aria-label="Board: ${esc(SAVED[0].n)}"><span>${esc(SAVED[0].n)}</span>${I('down','sm')}</button><button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
- <button class="link" data-a="visit" data-id="${id}" style="align-self:flex-start;font-weight:500">${esc(p.src)}</button>
- <h1>${esc(p.t)}</h1>${makeCard(id)}<p style="margin:0;color:var(--fg2)">${esc(desc)}</p>
- <button class="btn btn-secondary" style="width:100%" data-a="visit" data-id="${id}">Visit site</button>
- <div class="creator">${av(p.by,'b')}<span class="meta"><b>${esc(p.by)}</b><span>12.4k followers</span></span><button class="btn ${S.following?'btn-dark':'btn-secondary'}" data-a="follow" aria-pressed="${S.following}">${S.following?'Following':'Follow'}</button></div>
+ ${pinInfo(id,p,false)}
  ${commentsBlock(id)}</div></article></div>
  <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,10),(x)=>pinCard(x))}</div>${pinMoreMenu()}`);}
 
@@ -1578,8 +1600,7 @@ function mPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const li
  return `${mStatus()}<div class="m-hero">${img(id,p.t)}<button class="ib glass tl" data-a="back" aria-label="Back">${I('back')}</button><button class="ib glass tr" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button><button class="ib glass" data-a="lightboxPin" style="position:absolute;right:12px;bottom:12px" aria-label="View full size">${I('expand')}</button></div>
  <div class="m-body" style="padding-top:0"><div class="m-actions"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><span class="sp"></span>${makeCard(id)}
  <button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
- <h1 style="font-size:var(--fs-400);margin:4px 0 8px">${esc(p.t)}</h1>
- <div class="creator" style="margin-bottom:16px">${av(p.by,'b')}<span class="meta"><b>${esc(p.by)}</b></span><button class="btn btn-secondary sm" data-a="visit" data-id="${id}">Visit site</button></div>${commentsBlock(id)}
+ ${pinInfo(id,p,true)}${commentsBlock(id)}
  <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,8),(x)=>pinCard(x))}</div>${pinMoreMenu()}`;}
 function mBoard(){const b=bd();
  return `${mStatus()}<div class="m-head"><button class="ib" data-a="back" aria-label="Back">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="toastMsg" data-v="Board link copied" aria-label="Share">${I('share')}</button><button class="ib" data-a="soon" data-v="Board options" aria-label="More options">${I('more')}</button></div>
@@ -1665,7 +1686,8 @@ const A={
  pinMore:(el,e)=>{e.stopPropagation();S.pop='pinmore';render();},
  likePin:()=>{const k='pin'+S.pinId;S.liked.has(k)?S.liked.delete(k):S.liked.add(k);render();},
  focusComment:()=>{const f=$('#c-'+S.pinId);f&&f.focus();},
- follow:()=>{S.following=!S.following;render();if(S.following)toast('Following Hello Stitch Studio');},
+ descMore:(e)=>{const id=e.dataset.id;S.descMore=S.descMore===id?null:id;render();},
+follow:()=>{S.following=!S.following;render();if(S.following)toast('Following Hello Stitch Studio');},
  makeThis:el=>startDraft(draftFromPin(el.dataset.id)),
  lightboxPin:()=>{S.lightbox={kind:'pin'};render();},
  newBlank:()=>{S.pop=null;go('pick',{set:{pickSrc:'boards',pickBoard:0}});},
