@@ -1046,6 +1046,12 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 /* r35: mobile Make this inline, left of Save */
 .m-actions .make-row{margin:0 4px 0 0}
 .m-actions .make-row .tipwrap .tip{left:auto;right:0;top:auto;bottom:calc(100% + 8px);transform:none}
+/* r37: mobile calendars in one row, step refs in task card */
+.cal-box.row{grid-template-columns:minmax(0,1fr)}
+.dev-mobile .cal-box.row .cal-wrap.gal{grid-auto-columns:86%;gap:12px;margin:0 -16px;padding:0 16px 8px;scroll-padding-left:16px;scrollbar-width:none}
+.dev-mobile .cal-box.row .cal-wrap.gal::-webkit-scrollbar{display:none}
+.nx-refs{display:flex;flex-direction:column;gap:8px}
+.next.nx .nx-refs .ref{margin:0}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1168,9 +1174,9 @@ const CHIPS=['All','Home I have my own home','Ceramics','Glassware','Interiors',
 const BOARDS=[{n:'Home',img:'p01',pins:BOARD},{n:'Glassware',img:'p02',pins:['p02','p09','p26']},{n:'Ceramics',img:'p03',pins:['p03','p13','p24','p12','p19']},{n:'Vintage finds',img:'p04',pins:['p04','p08','p18','p25']}];
 
 const STAMP_STEPS=[
- {t:'Choose pattern',img:'s1',dur:'About 20 min',meta:'Pattern PDF · 4 motifs',date:'Oct 26',b:['Print the botanical stamps PDF at 100%','Pick four motifs: fuchsia, marguerite, lily of the valley and lilac','Cut the linen to 30 × 30 cm']},
- {t:'Transfer design',img:'s2',dur:'About 30 min',meta:'Transfer pen · Light box',date:'Oct 27',b:['Tape the pattern to a bright window','Trace each stamp with the water-soluble pen','Hoop the linen drum-tight']},
- {t:'Stitch outline',img:'s3',dur:'About 40 min',meta:'Chain stitch · White floss',date:'Nov 2',b:['Thread 3 strands of white floss','Chain stitch around the scalloped stamp borders','Keep the fabric drum-tight in the hoop'],video:'Video: Chain stitch for beginners · 4 min'},
+ {t:'Choose pattern',img:'s1',dur:'About 20 min',meta:'Pattern PDF · 4 motifs',date:'Oct 26',r:['Pattern PDF: Botanical stamps'],b:['Print the botanical stamps PDF at 100%','Pick four motifs: fuchsia, marguerite, lily of the valley and lilac','Cut the linen to 30 × 30 cm']},
+ {t:'Transfer design',img:'s2',dur:'About 30 min',meta:'Transfer pen · Light box',date:'Oct 27',r:['Pattern PDF: Botanical stamps'],b:['Tape the pattern to a bright window','Trace each stamp with the water-soluble pen','Hoop the linen drum-tight']},
+ {t:'Stitch outline',img:'s3',dur:'About 40 min',meta:'Chain stitch · White floss',date:'Nov 2',b:['Thread 3 strands of white floss','Chain stitch around the scalloped stamp borders','Keep the fabric drum-tight in the hoop'],video:'Video: Chain stitch for beginners · 4 min',r:['Video: Chain stitch for beginners']},
  {t:'Fill stitches',img:'s4',dur:'About 1 hour',meta:'Satin stitch · French knots',date:'Nov 5',b:['Satin stitch the petals in 2 strands','Add French knots for the flower centres','Use cream floss for highlights']},
  {t:'Press and finish',img:'s5',dur:'About 20 min',meta:'Iron · Towel',date:'Nov 7',b:['Rinse out the pen marks in cool water','Press face down on a towel','Trim the edges, ready to frame']},
 ];
@@ -1279,15 +1285,15 @@ function calendar(p,o={}){const s=p.start,e=p.end;const cks=new Set(checkins(p))
  const base=p.calM!=null?p.calM:(()=>{const d=D(s);return d.getFullYear()*12+d.getMonth();})();
  const span=(()=>{const a=D(s),b=D(e);return Math.min(12,Math.max(1,(b.getFullYear()*12+b.getMonth())-(a.getFullYear()*12+a.getMonth())+1));})();
  const months=Array.from({length:span},(_,k)=>base+k).map(x=>[Math.floor(x/12),x%12]);const lastI=months.length-1;
- return `<div class="cal-box"><div class="cal-wrap${span>4?' gal':''}" data-n="${span}"${span>4?` role="region" aria-label="${span} months, scroll sideways" tabindex="0"`:''}>${months.map(([y,m],mi)=>{const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();
+ return `<div class="cal-box${S.dev==='mobile'&&S.screen==='project'?' row':''}"><div class="cal-wrap${span>4||(S.dev==='mobile'&&S.screen==='project'&&span>1)?' gal':''}" data-n="${span}"${span>4?` role="region" aria-label="${span} months, scroll sideways" tabindex="0"`:''}>${months.map(([y,m],mi)=>{const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();
   let cells='';for(let i=0;i<pad;i++)cells+='<span class="d blank"></span>';
   for(let d=1;d<=n;d++){const k=iso(new Date(y,m,d));let c='d';if(k===s)c+=' s';else if(k===e)c+=' e';else if(k>s&&k<e)c+=' in';if(cks.has(k)&&k!==s&&k!==e)c+=' c';if(dn.has(k))c+=' done';
    const lab=`${MONTHS[m]} ${d}${k===s?', start':k===e?', finish':''}`;
    cells+=t?`<button class="${c}" data-a="pickDay" data-t="${t}" data-v="${k}" aria-label="${lab}" aria-pressed="${k===s||k===e}">${d}</button>`:`<span class="${c}">${d}</span>`;}
   const prev=t&&mi===0?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="-1" aria-label="Previous month">${I('left','sm')}</button>`:'';const next=t&&mi===lastI?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="1" aria-label="Next month">${I('right','sm')}</button>`:'';
-    return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${(()=>{const perRow=S.dev==='mobile'?1:2;const vert=span<=4&&span>perRow;
+    return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${(()=>{const perRow=S.dev==='mobile'?1:2;if(S.dev==='mobile'&&S.screen==='project')return '';const vert=span<=4&&span>perRow;
   const btn=vert?`<button class="cal-arrow" data-a="calDown" aria-label="Scroll down to see all ${span} months">${I('down','lg')}</button>`:span>4?`<button class="cal-arrow" data-a="calSide" aria-label="Scroll sideways to see all ${span} months">${I('right','lg')}</button>`:'';
-  return `<div class="cal-rail">${btn}</div>`;})()}</div>${span>4?`<p class="cal-more">Scroll sideways to see all ${span} months</p>`:''}`;}
+  return `<div class="cal-rail">${btn}</div>`;})()}</div>${span>4&&!(S.dev==='mobile'&&S.screen==='project')?`<p class="cal-more">Scroll sideways to see all ${span} months</p>`:''}`;}
 const fmtL=v=>{const d=D(v);return `${MON[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;};
 function dateFields(p,t){const dis=p.creating?'disabled':'';return `<div class="dates">${[['start','Start date'],['end','End date']].map(([k,l])=>{const open=S.pop===`dp:${t}:${k}`;
  return `<div class="field dp"><span class="lab" id="l-${t}-${k}">${l}</span><button type="button" class="inp dp-btn" id="f-${t}-${k}" data-a="dpOpen" data-t="${t}" data-k="${k}" aria-haspopup="dialog" aria-expanded="${open}" aria-labelledby="l-${t}-${k} f-${t}-${k}" ${dis}><span>${fmtL(p[k])}</span>${I('calI')}</button>${open?dpPop(p,t,k):''}</div>`;}).join('')}</div>`;}
@@ -1444,7 +1450,7 @@ function dCreate(){const d=S.draft;
 function stepAcc(p,i,m){const s=p.steps[i];const n=nextIdx(p);const open=S.open===i;ensureWip(p);const st=s.done?'done':s.wip?'cur':'';const last=stepsDone(p)-1;
  return `<div class="acc ${open?'open':''}" id="step-${i}"><button class="acc-h" data-a="toggleStep" data-i="${i}" aria-expanded="${open}"><span class="st ${st}">${s.done?I('check','sm'):s.wip?I('clock','sm'):`<b style="font-size:12px">${i+1}</b>`}</span><span class="tt ${s.done?'done':''}">Step ${i+1} · ${esc(s.t)}${s.done&&s.date?` <span class="help">Done ${esc(s.date)}</span>`:''}</span><span class="help">${esc(s.dur)}</span>${I('down','chev')}</button>${S.justDone===i&&s.done?`<div class="undo-inline" role="status">${I('check','sm')}<span>Step ${i+1} done</span><button class="link" data-a="undoDone" data-i="${i}">Undo</button></div>`:''}
  ${open?`<div class="acc-b"><div style="display:flex;flex-direction:column;gap:12px;min-width:0"><ul>${s.b.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
- ${s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:''}
+ ${stepRefsHtml(p,s)}
  <label class="lnk-row" style="cursor:pointer">${I('upload','sm')}Upload work<input type="file" accept="image/*" data-up="${i}" hidden></label>
  ${(s.uploads||[]).length?`<div class="uploads">${s.uploads.map(u=>`<img src="${u}" alt="Your progress photo">`).join('')}</div>`:''}</div>
  ${s.img?`<div class="im">${img(s.img,s.t)}</div>`:'<span></span>'}
@@ -1477,6 +1483,10 @@ function materials(p){const have=p.materials.filter(x=>x.have).length;const miss
  return `<div class="sec"><div class="row-sb"><h2 class="sec-title">Materials <span class="tag ${miss.length?'':'ok'}">${have} of ${p.materials.length} ready</span></h2>${miss.length?`<button class="btn btn-secondary sm" data-a="shop">${I('bag','sm')}Shop missing items</button>`:''}</div>
  ${S.pop==='shop'?`<div class="confirm"><b>Missing</b>${miss.map(x=>`<div class="row-sb"><span>${esc(x.t)}</span><span style="display:flex;gap:8px"><button class="btn btn-secondary xs" data-a="toastMsg" data-v="Opening shopping results">Find it</button><button class="btn btn-dark xs" data-a="haveIt" data-t="${esc(x.t)}">I have it</button></span></div>`).join('')}</div>`:''}
  <div class="list">${p.materials.map((x,i)=>`<button class="check" role="checkbox" aria-checked="${x.have}" data-a="pmat" data-i="${i}"><span class="box">${x.have?I('check','sm'):''}</span><span class="t">${esc(x.t)}</span></button>`).join('')||'<span class="help">No materials listed.</span>'}</div></div>`;}
+function stepRefs(p,s){if(s.r)return s.r;const txt=(s.t+' '+(s.meta||'')+' '+s.b.join(' ')).toLowerCase();
+ const out=(p.refs||[]).filter(r=>r.replace(/^[^:]+: /,'').toLowerCase().split(/[^a-z]+/).filter(x=>x.length>4).some(x=>txt.includes(x)));
+ if(!out.length&&p.pinId&&PINS[p.pinId]&&/Pin’s tutorial/.test(s.b.join(' ')))out.push('Pin: '+PINS[p.pinId].t);return out;}
+function stepRefsHtml(p,s){const rf=stepRefs(p,s);return rf.length?`<div class="nx-refs" aria-label="References for this step">${rf.map(r=>refRow(r,p.pinId&&PINS[p.pinId]?PINS[p.pinId].src:null)).join('')}</div>`:s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:'';}
 function nextCard(p,m){const n=nextIdx(p);const d=stepsDone(p);
  if(n==null&&S.focus==null)return `<div class="next" style="grid-template-columns:1fr auto"><div><small>All ${p.steps.length} steps done</small><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><button class="btn btn-primary" data-a="complete">Complete project</button></div>`;
  const i=S.focus!=null&&p.steps[S.focus]?S.focus:n;const s=p.steps[i];const last=d-1;ensureWip(p);
@@ -1488,7 +1498,7 @@ function nextCard(p,m){const n=nextIdx(p);const d=stepsDone(p);
  return `<div class="next nx" id="next-card">${jd!=null?`<div class="undo-inline nx-undo" role="status">${I('check','sm')}<span>Step ${jd+1} done</span><button class="link" data-a="undoDone" data-i="${jd}">Undo</button></div>`:''}
  <div class="nx-h"><span class="st ${st}">${s.done?I('check','sm'):s.wip?I('half','sm'):`<b style="font-size:12px">${i+1}</b>`}</span><span class="nx-lab">${lab}</span><span class="nx-dur">${esc(s.dur)}</span>${i!==n&&n!=null?`<button class="link nx-back" data-a="focusNext">Back to next step</button>`:''}</div>
  <div class="nx-row"><div class="im">${s.img?img(s.img,s.t):`<span class="ph-txt" style="height:100%;background:var(--surface)">${i+1}</span>`}</div><div class="nx-t"><h2>Step ${i+1} · ${esc(s.t)}</h2>${s.meta?`<p>${esc(s.meta)}</p>`:''}</div><div class="nx-b"><ul>${s.b.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
- ${s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:''}
+ ${stepRefsHtml(p,s)}
  <label class="lnk-row" style="cursor:pointer">${I('upload','sm')}Upload work<input type="file" accept="image/*" data-up="${i}" hidden></label>
  ${(s.uploads||[]).length?`<div class="uploads">${s.uploads.map(u=>`<img src="${u}" alt="Your progress photo">`).join('')}</div>`:''}
  ${S.ask===i?`<div class="ask"><span class="q">Any tips for ${esc(s.t.toLowerCase())}?</span><span class="a">${esc(ASK[i]||'Go slowly and check the Pin’s tutorial photos as you work. Mark the step done when you’re happy with it.')}</span><form class="addrow" data-f="ask" data-i="${i}"><input class="inp" id="ask-${i}" placeholder="Ask a follow-up" autocomplete="off"><button class="btn btn-dark sm">Ask</button></form></div>`:''}
@@ -1508,13 +1518,13 @@ function refRow(r,src,o={}){const id=/^Pin: /.test(r)?PIN_BY_T[r.slice(5)]:null;
   :`<button class="ref" data-a="toastMsg" data-v="${site?'Opens '+esc(site)+' in a new tab':'Opening '+esc(label)}">${body}${I('right','sm')}</button>`;}
 function timelineSec(p){const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const [mo,da]=s.date.split(' ');return iso(new Date(2026,MON.indexOf(mo),+da));});
  return `<div class="sec tl-sec"><h2 class="sec-title">Calendar</h2><span>${fmt(p.start)} – ${fmt(p.end)} · ${Math.round((diff(p.start,p.end)+1)/7)||1} week${Math.round((diff(p.start,p.end)+1)/7)>1?'s':''}</span><div class="keyd">${I('clock','sm')}Key dates: ${esc(keyDates(p))}</div>${p.status==='made'?'':dateFields(p,'proj')+calHelp(p)}${calendar(p,{done:dn,target:p.status==='made'?null:'proj'})}${legend()}</div>`;}
-function overviewSide(p,m){const t=S.side;const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const [mo,da]=s.date.split(' ');return iso(new Date(2026,MON.indexOf(mo),+da));});
+function overviewSide(p,m,inline){const t=S.side;const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const [mo,da]=s.date.split(' ');return iso(new Date(2026,MON.indexOf(mo),+da));});
  let body='';
  if(t==='activity') body=`<div class="list" style="gap:12px">${p.activity.map(a=>`<div class="feed-item"><span class="dot"></span><span>${esc(a.t)}<small>${esc(a.d)}</small></span></div>`).join('')}</div>`;
  else if(t==='files'){const f=p.steps.flatMap(s=>s.uploads||[]);body=f.length?`<div class="uploads">${f.map(u=>`<img src="${u}" alt="Uploaded photo">`).join('')}</div>`:`<div class="empty" style="padding:24px"><h3 style="font-size:var(--fs-300)">No files yet</h3><p>Photos you upload to a step appear here.</p></div>`;}
  else body=`${m?'':`<div class="cov">${img(p.cover,p.title)}</div>`}<p style="margin:0">${esc(p.desc||'No description yet.')}</p>
  <div class="vis"><span class="lab" style="display:flex;gap:8px;align-items:center">${I(p.vis==='private'?'lock':'globe','sm')}Visibility</span><button class="chip round" data-a="pvis" data-v="private" aria-pressed="${p.vis==='private'}">Private</button><button class="chip round" data-a="pvis" data-v="public" aria-pressed="${p.vis==='public'}">Public</button></div>
- ${m?`<button class="lnk-row" data-a="toRoadmap" style="background:var(--subtle);padding:12px;margin:0;justify-content:space-between"><span><small class="help" style="display:block">Next step · ${stepsDone(p)} of ${p.steps.length} done</small>${nextIdx(p)!=null?`Step ${nextIdx(p)+1} · ${esc(p.steps[nextIdx(p)].t)} · ${esc(p.steps[nextIdx(p)].dur.replace('About ',''))}`:'All steps done'}</span>${I('right')}</button>`:''}
+ ${m&&!inline?`<button class="lnk-row" data-a="toRoadmap" style="background:var(--subtle);padding:12px;margin:0;justify-content:space-between"><span><small class="help" style="display:block">Next step · ${stepsDone(p)} of ${p.steps.length} done</small>${nextIdx(p)!=null?`Step ${nextIdx(p)+1} · ${esc(p.steps[nextIdx(p)].t)} · ${esc(p.steps[nextIdx(p)].dur.replace('About ',''))}`:'All steps done'}</span>${I('right')}</button>`:''}
  <div class="sec"><h2 class="sec-title" style="font-size:var(--fs-300)">Notifications</h2><button class="lnk-row" data-a="cycleNotif">${I('bell','sm')}${p.notif==='weekly'?`Weekly check-in · ${({Mon:'Mondays',Tue:'Tuesdays',Wed:'Wednesdays',Thu:'Thursdays',Fri:'Fridays',Sat:'Saturdays',Sun:'Sundays'})[p.day]}`:p.notif==='daily'?'Daily check-in · 7 pm':'Check-ins off'}</button></div>
  <div class="sec"><h2 class="sec-title" style="font-size:var(--fs-300)">References</h2><div class="list">${p.refs.map(r=>refRow(r,p.pinId?PINS[p.pinId].src:null)).join('')||'<span class="help">None yet</span>'}</div></div>
  <div class="sec"><h2 class="sec-title" style="font-size:var(--fs-300)">Collaborators</h2><div class="people">${p.people.map((n,i)=>`<span class="person">${av(n,i?'c':'')}${esc(n)}${i?'':' (you)'}</span>`).join('')}</div></div>
@@ -1588,7 +1598,7 @@ function mOverview(){const p=proj();return `${mStatus()}<div class="m-head"><but
  ${mTabs('overview')}<div class="m-body" style="padding-top:0"><div style="border-radius:var(--r-l);overflow:hidden;aspect-ratio:358/478">${img(p.cover,p.title)}</div>
  <div style="display:flex;align-items:center;gap:8px;margin:16px 0 8px"><h1 style="font-size:var(--fs-400);margin:0;flex:1">${esc(p.title)}</h1>${statusPill(p)}</div>${overviewSide(p,true)}</div>`;}
 function mRoadmap(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1><button class="btn btn-secondary sm" data-a="editProj">Edit</button></div>
- ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px"><div class="m-stat">${statusPill(p)}<span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}${S.offline?'Saved on this device':'Saved'}</span></div>${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,true)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>`;}
+ ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px"><div class="m-stat">${statusPill(p)}<span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}${S.offline?'Saved on this device':'Saved'}</span></div>${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,true)}${materials(p)}${timelineSec(p)}${overviewSide(p,true,true)}${completeBlock(p)}</div>`;}
 function mFinished(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="navHub" aria-label="Back to projects">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="shareMenu" aria-label="Share">${I('share')}</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:56px;top:100px')}${finMore('right:12px;top:100px')}</div>
  <div class="m-body" style="padding-top:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h1 style="font-size:var(--fs-500);margin:0">${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help" style="width:100%">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span></div>${finBody(p,true)}</div>`;}
 
