@@ -875,6 +875,17 @@ button.ref:hover{background:var(--subtle)}
 /* round 21: autosave status */
 .autosave{display:inline-flex;align-items:center;gap:4px;color:var(--fg2);font-size:var(--fs-200);white-space:nowrap;padding:0 8px}
 .pp-main > .sec + .sec .cal-wrap{margin-top:0}
+
+/* round 22: rail hover tile and tooltip, matched to pinterest.com */
+:root{--rail-hover:#fafaf9;--tip-bg:#000;--tip-fg:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rail-hover:#2b2b2a;--tip-bg:#fff;--tip-fg:#000}}
+:root[data-theme="dark"]{--rail-hover:#2b2b2a;--tip-bg:#fff;--tip-fg:#000}
+.rbtn{border-radius:16px}
+.rbtn:hover,.rbtn[aria-current="page"]:hover,.rail .logo:hover{background:var(--rail-hover)}
+.rbtn .tip{left:calc(100% + 12px);background:var(--tip-bg);color:var(--tip-fg);font-size:13px;line-height:16px;font-weight:400;padding:8px;border-radius:12px;box-shadow:none;transition:opacity .1s .2s}
+.rbtn:focus-visible .tip{opacity:1}
+/* round 22: smaller overview image on the project page */
+.pp .side-card .cov{width:240px;max-width:100%}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -902,12 +913,12 @@ userPlus:'<circle cx="10" cy="8.5" r="3.5"/><path d="M4 19.5a6 6 0 0 1 12 0M18.5
 sliders:'<path d="M4 8h16M4 16h16"/><circle cx="15" cy="8" r="2.3" style="fill:var(--bg)"/><circle cx="9" cy="16" r="2.3" style="fill:var(--bg)"/>',
 homeF:'<path d="M4 10.2 12 3.5l8 6.7V19a1.5 1.5 0 0 1-1.5 1.5H14v-4.5a2 2 0 0 0-4 0v4.5H5.5A1.5 1.5 0 0 1 4 19z" style="fill:currentColor"/>',
 compassF:'<circle cx="12" cy="12" r="9.5" style="fill:currentColor"/><path d="m15.5 8.5-2 5-5 2 2-5z" style="fill:none;stroke:var(--bg);stroke-width:2"/>',
-boardF:'<path d="M3 6a3 3 0 0 1 3-3h4.75v9.75H3zM13.25 3H18a3 3 0 0 1 3 3v2.75h-7.75zM3 15.25h7.75V21H6a3 3 0 0 1-3-3zM13.25 11.25H21V18a3 3 0 0 1-3 3h-4.75z" style="fill:currentColor"/>',
+boardF:'<path d="M6.5 2.5h4.75v19H6.5a4 4 0 0 1-4-4v-11a4 4 0 0 1 4-4zM12.75 2.5h4.75a4 4 0 0 1 4 4v4.75h-8.75zM12.75 12.75h8.75v4.75a4 4 0 0 1-4 4h-4.75z" style="fill:currentColor;stroke:none"/>',
 projectsF:'<rect x="3.5" y="3" width="17" height="18" rx="3.5" style="fill:currentColor"/><path d="m8.5 12 2.5 2.5 4.5-5" style="fill:none;stroke:var(--bg);stroke-width:2"/>',
 plusSqF:'<rect x="3" y="3" width="18" height="18" rx="4" style="fill:currentColor"/><path d="M12 7.5v9M7.5 12h9" style="fill:none;stroke:var(--bg);stroke-width:2"/>',
 home:'<path d="M4 10.2 12 3.5l8 6.7V19a1.5 1.5 0 0 1-1.5 1.5H14v-4.5a2 2 0 0 0-4 0v4.5H5.5A1.5 1.5 0 0 1 4 19z"/>',
 compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-1.8 5.2-5.2 1.8 1.8-5.2z"/>',
-board:'<path d="M3.5 6A2.5 2.5 0 0 1 6 3.5h4.5v9h-7zM13.5 3.5H18A2.5 2.5 0 0 1 20.5 6v2.5h-7zM3.5 15.5h7v5H6A2.5 2.5 0 0 1 3.5 18zM13.5 11.5h7V18a2.5 2.5 0 0 1-2.5 2.5h-4.5z"/>',
+board:'<rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M12 3.5v17M12 12h8.5"/>',
 projects:'<rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
 plus:'<path d="M12 5v14M5 12h14"/>',
 plusSq:'<rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M12 8v8M8 12h8"/>',
@@ -1112,7 +1123,7 @@ function legend(){return `<div class="keyd"><i style="background:var(--sel)"></i
 function rail(){const a=S.screen;const cur=x=>a===x||(x==='board'&&a==='saved')||(x==='hub'&&['project','finished','overview'].includes(a))?'aria-current="page"':'';
  const b=(act,ic,tip,x,extra='',dot=false)=>{const on=(x&&cur(x))||extra.includes('aria-current');return `<button class="rbtn" data-a="${act}" ${x?cur(x):''} ${extra} aria-label="${tip}${dot?', new':''}">${I(on&&P[ic+'F']?ic+'F':ic,'lg')}${dot?'<span class="ndot" aria-hidden="true"></span>':''}<span class="tip">${tip}</span></button>`;};
  return `<nav class="rail" aria-label="Main"><button class="logo" data-a="navHome" aria-label="Home"><img src="${IMG.logo}" alt=""></button>
- ${b('navHome','home','Home','home')}${b('soon','compass','Explore','',`data-v="Explore"`,true)}${b('navBoard','board','Saved','board')}${b('navHub','projects','Projects','hub')}
+ ${b('navHome','home','Home','home')}${b('soon','compass','Explore','',`data-v="Explore"`,true)}${b('navBoard','board','Your boards','board')}${b('navHub','projects','Projects','hub')}
  ${b('toggleCreate','plusSq','Create','',S.pop==='create'?'aria-current="page"':'')}${b('soon','bell','Notifications','',`data-v="Notifications"`,true)}${b('soon','chat','Messages','',`data-v="Messages"`)}${b('soon','tune','Customize','',`data-v="Customize"`)}
  <span class="spacer"></span>${b('soon','gear','Settings','',`data-v="Settings"`)}</nav>`;}
 function topbar(){return `<div class="d-top"><label class="search pill" style="flex:1"><span>${I('search')}</span><input id="q-top" placeholder="${['saved','board'].includes(S.screen)?'Search your Pins':'Search'}" aria-label="Search" data-k="searchTop">${['saved','board'].includes(S.screen)?`<button class="ib sm" data-a="soon" data-v="Voice search" aria-label="Search by voice">${I('mic')}</button>`:''}</label>
