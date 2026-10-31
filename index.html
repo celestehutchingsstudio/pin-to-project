@@ -1161,6 +1161,41 @@ input::placeholder,textarea::placeholder{color:var(--ph);opacity:1}
  .closeup .bar{border-radius:0}
 }
 @media (max-width:560px){.cu-back{left:16px}}
+/* r49 desktop layouts from Celeste's reference screens */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Pin close-up: card spans the feed minus one column; a column of Pins runs beside it; feed continues below */
+.cu-layout{display:grid;grid-template-columns:minmax(0,1fr) calc((100% - (var(--n) - 1) * 16px) / var(--n));gap:16px;align-items:start;padding-top:8px}
+.cu-layout.stack{grid-template-columns:minmax(0,1fr)}
+.cu-main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.cu-rail{display:flex;flex-direction:column;gap:16px;min-width:0}
+.cu-layout .closeup{max-width:none;width:100%;margin:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;border-radius:32px;box-shadow:0 1px 20px rgba(0,0,0,.1)}
+.cu-layout .closeup .imgc{position:relative;min-height:560px;border-radius:32px 0 0 32px;overflow:hidden;align-self:stretch}
+.cu-layout .closeup .imgc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cu-layout .cu-back{position:absolute;left:16px;top:16px;z-index:2;width:48px;height:48px}
+.cu-layout .closeup .side{padding:0 32px 32px}
+.cu-layout .closeup .bar{margin:0 -32px;padding:24px 32px 12px;border-radius:0 32px 0 0}
+@media (max-width:1000px){.cu-layout .closeup{grid-template-columns:1fr}.cu-layout .closeup .imgc{min-height:0;aspect-ratio:4/5;border-radius:32px 32px 0 0}.cu-layout .closeup .bar{border-radius:0}}
+/* New project + project page: main column, full-height panel flush to the right edge */
+.split{display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,28vw,480px);min-height:calc(100vh - var(--ctl,56px))}
+.split-main{min-width:0}
+.split-rail{border-left:1px solid var(--line);position:sticky;top:var(--ctl,56px);align-self:start;height:calc(100vh - var(--ctl,56px));overflow:auto;padding:24px}
+.split .cp,.split .pp{display:block;max-width:none;margin:0;padding:24px 32px 64px}
+.split .cp-top{padding-left:32px;padding-right:32px}
+.split-rail .ideas{position:static;max-height:none;overflow:visible;padding:0}
+.split-rail .side-card .cov{aspect-ratio:3/2}
+@media (max-width:1180px){.split{grid-template-columns:minmax(0,1fr) 320px}.split .cp,.split .pp{padding:24px 24px 48px}.split .cp-top{padding-left:24px;padding-right:24px}}
+@media (max-width:900px){.split{grid-template-columns:1fr}.split-rail{position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+/* Made it: photo collage, tall step photos across the full width */
+.fin-top{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:48px}
+.collage-hero{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:4px;aspect-ratio:2/1;border-radius:var(--r-l);overflow:hidden}
+.collage-hero .hero{grid-row:1/3;aspect-ratio:auto;height:100%;border-radius:0}
+.hero-sm{display:block;overflow:hidden;cursor:zoom-in;padding:0;border:0;background:var(--subtle)}
+.hero-sm img,.collage-hero .hero img{width:100%;height:100%;object-fit:cover}
+.dev-desktop .photos{grid-template-columns:repeat(5,minmax(0,1fr))}
+.dev-desktop .photo .im{aspect-ratio:4/5}
+.fin-page .sec-h{justify-content:flex-start;text-align:left}
+@media (max-width:1180px){.fin-top{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:32px}}
+@media (max-width:900px){.fin-top{grid-template-columns:1fr}.dev-desktop .photos{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1467,13 +1502,15 @@ function pinInfo(id,p,m){const desc=pinDesc(id,p);const more=S.descMore===id;con
  <h1 class="pi-t">${esc(p.t)}</h1>${m?'':makeCard(id)}
  <div class="pi-desc"><h2>Description</h2><p class="${more||!long?'':'clamp'}" id="pi-desc-${id}">${esc(desc)}</p>${long?`<button class="pi-more" data-a="descMore" data-id="${id}" aria-expanded="${more}" aria-controls="pi-desc-${id}">${more?'See less':'See more'}</button>`:''}</div>${visit}</div>`;}
 function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
- return dShell(`<div class="d-body"><div class="cu-wrap"><button class="ib cu-back" data-a="back" aria-label="Back">${I('back')}</button>
- <article class="closeup"><div class="imgc">${img(id,p.t)}<div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
+ const n=colCount(),rest=FEED.filter(x=>x!==id).concat(FEED.filter(x=>x!==id)).slice(0,22),wide=n>=4;
+ return dShell(`<div class="d-body"><div class="cu-layout${wide?'':' stack'}" style="--n:${n}"><div class="cu-main">
+ <article class="closeup"><div class="imgc">${img(id,p.t)}<button class="ib glass cu-back" data-a="back" aria-label="Back">${I('back')}</button><div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
  <div class="side"><div class="bar"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="focusComment" aria-label="Comment">${I('chat')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><button class="ib" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button>
  <span style="flex:1"></span><button class="boardpick" data-a="soon" data-v="Pick a board" aria-label="Board: ${esc(SAVED[0].n)}"><span>${esc(SAVED[0].n)}</span>${I('down','sm')}</button><button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
  ${pinInfo(id,p,false)}
- ${commentsBlock(id)}</div></article></div>
- <div class="sec-h cu-more"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,10),(x)=>pinCard(x))}</div>${pinMoreMenu()}`);}
+ ${commentsBlock(id)}</div></article>
+ <h2 class="sr-only">More to explore</h2>${grid(wide?rest.slice(4):rest,(x)=>pinCard(x),{cols:wide?n-1:n})}</div>
+ ${wide?`<div class="cu-rail">${rest.slice(0,4).map(x=>pinCard(x)).join('')}</div>`:''}</div></div>${pinMoreMenu()}`);}
 
 function selBar(kind){const n=S.selected.size;
  if(kind==='pick')return `<div class="selbar" role="region" aria-label="Selection"><b>${n?`${n} Pin${n>1?'s':''} selected`:'Pick at least one Pin'}</b><button class="btn btn-primary sm" data-a="pickNext" ${n?'':'disabled'}>Next</button></div>`;
@@ -1560,9 +1597,9 @@ function pickBody(m){const src=S.pickSrc||'boards';const bi=S.pickBoard||0;const
 function dPick(){return dShell(`<div class="cp-top"><button class="ib" data-a="closeCreate" aria-label="Close">${I('x')}</button><h1>New project</h1></div><div class="d-body pk-d">${pickBody(false)}</div>`,{top:false});}
 function mPick(){return `${mStatus()}<div class="m-head"><button class="ib" data-a="back" aria-label="Close">${I('x')}</button><h1>New project</h1><span style="width:40px"></span></div><div class="m-body">${pickBody(true)}</div>`;}
 function dCreate(){const d=S.draft;
- return dShell(`<div class="cp-top"><button class="ib" data-a="closeCreate" aria-label="Close">${I('x')}</button><h1>${S.editing?'Edit project':'New project'}</h1>
+ return dShell(`<div class="split"><div class="split-main"><div class="cp-top"><button class="ib" data-a="closeCreate" aria-label="Close">${I('x')}</button><h1>${S.editing?'Edit project':'New project'}</h1>
  <button class="btn btn-secondary" data-a="later" ${d.creating?'disabled':''}>Save for later</button><button class="btn btn-primary" data-a="next" ${d.creating?'aria-disabled="true"':''}>${d.creating?'<span class="spin"></span>Creating…':S.editing?'Save changes':'Create project'}</button></div>
- <div class="cp">${createForm(false)}${ideasPanel(false)}</div>`,{top:false});}
+ <div class="cp">${createForm(false)}</div></div><div class="split-rail">${ideasPanel(false)}</div></div>`,{top:false});}
 
 /* ----- project page ----- */
 function stepAcc(p,i,m){const s=p.steps[i];const n=nextIdx(p);const open=S.open===i;ensureWip(p);const st=s.done?'done':s.wip?'cur':'';const last=stepsDone(p)-1;
@@ -1654,8 +1691,8 @@ function overviewSide(p,m,inline){const t=S.side;const dn=p.steps.filter(s=>s.do
 `;
  return `<div class="side-card"><div class="tabs" role="tablist">${[['overview','Overview'],['activity','Activity'],['files','Files']].map(([k,l])=>`<button class="tab" role="tab" data-a="side" data-v="${k}" aria-selected="${t===k}">${l}</button>`).join('')}</div>${body}</div>`;}
 function dProject(){const p=proj();
- return dShell(`<div class="cp-top"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1>${statusPill(p)}<button class="btn btn-secondary" data-a="editProj">Edit</button><span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}${S.offline?'Saved on this device':'Saved'}</span></div>
- <div class="pp"><div class="pp-main">${nextCard(p,false)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,false)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>${overviewSide(p,false)}</div>`,{top:false});}
+ return dShell(`<div class="split"><div class="split-main"><div class="cp-top"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1>${statusPill(p)}<button class="btn btn-secondary" data-a="editProj">Edit</button><span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}${S.offline?'Saved on this device':'Saved'}</span></div>
+ <div class="pp"><div class="pp-main">${nextCard(p,false)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,false)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div></div></div><div class="split-rail">${overviewSide(p,false)}</div></div>`,{top:false});}
 
 /* ----- finished ----- */
 function finPhotos(p){return p.steps.map((s,i)=>({img:s.img||p.cover,t:s.t,i,date:s.date}));}
@@ -1663,7 +1700,7 @@ function shareMenu(pos){return S.pop==='share'?`<div class="click-catch" style="
 function finMore(pos){return S.pop==='finmore'?`<div class="click-catch" style="position:fixed" data-a="closePop"></div><div class="menu" style="${pos}" role="menu"><button class="mi" data-a="reopen">Move back to In progress</button><button class="mi" data-a="makeAgain">Make it again</button></div>`:'';}
 function finBody(p,m){const ph=finPhotos(p).filter(x=>!S.finSearch||x.t.toLowerCase().includes(S.finSearch.toLowerCase()));const pin=p.pinId&&PINS[p.pinId];
  const desc=p.id==='stamps'?'My first stamp sampler. I stitched four botanical stamps in white on blue linen and added a lilac sprig to the fourth. Took two weekends.':(p.desc||'Finished and loving it.');
- return `<div class="${m?'':'fin-top'}" style="${m?'display:flex;flex-direction:column;gap:16px':''}"><button class="hero" data-a="lbHero" aria-label="View finished photo">${img(p.cover,p.title)}</button>
+ return `<div class="${m?'':'fin-top'}" style="${m?'display:flex;flex-direction:column;gap:16px':''}">${m?`<button class="hero" data-a="lbHero" aria-label="View finished photo">${img(p.cover,p.title)}</button>`:`<div class="collage-hero"><button class="hero" data-a="lbHero" aria-label="View finished photo">${img(p.cover,p.title)}</button>${finPhotos(p).slice(2,4).map(x=>`<button class="hero-sm" data-a="lb" data-i="${x.i}" aria-label="View step ${x.i+1} photo">${img(x.img,x.t)}</button>`).join('')}</div>`}
  <div class="desc"><h2 class="sec-title" style="font-size:var(--fs-400);margin:0">Description</h2><p>${esc(desc)}</p>
  ${pin?`<button class="credit" data-a="openPin" data-id="${p.pinId}">${img(p.pinId)}<span style="flex:1;min-width:0">Made from a Pin by <b>${esc(pin.by)}</b>: ${esc(pin.t)}</span>${I('link','sm')}</button>`:''}
  <div class="sec"><h2 class="sec-title" style="font-size:var(--fs-300)">Project timeline</h2><span>${fmt(p.start)} – ${esc(p.finished)} · ${p.id==='stamps'?13:diff(p.start,p.end)} days · ${p.steps.length} steps</span>
@@ -1672,7 +1709,7 @@ function finBody(p,m){const ph=finPhotos(p).filter(x=>!S.finSearch||x.t.toLowerC
  <div class="photos">${ph.map(x=>`<button class="photo" data-a="lb" data-i="${x.i}"><span class="im">${img(x.img,x.t)}</span><small>Step ${x.i+1}</small><b>${esc(x.t)}</b></button>`).join('')||'<span class="help">No steps match.</span>'}</div>
  <div class="sec" style="margin-top:32px"><h2 class="sec-title" style="font-size:var(--fs-300)">${S.fin.length} comments</h2>${S.fin.map((c,i)=>commentRow(c,i,'fin')).join('')}
  <form class="addc" data-f="finComment">${av('June')}<label class="search pill"><input id="c-fin" placeholder="Add a comment" aria-label="Add a comment" autocomplete="off"><button class="ib sm" aria-label="Post comment">${I('send','sm')}</button></label></form></div>
- <div class="sec-h cu-more"><h2>More to explore</h2></div>${grid(['p02','p09','p24','p06','p23','p26','p13','p03'],(id)=>pinCard(id))}`;}
+ <div class="sec-h"><h2>More to explore</h2></div>${grid(['p02','p09','p24','p06','p23','p26','p13','p03','p11','p17'],(id)=>pinCard(id))}`;}
 function dFinished(){const p=proj();
  return dShell(`<div class="d-body fin-page"><div class="fin-head"><h1>${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span><span style="flex:1"></span>
  <span style="position:relative;display:flex;gap:8px"><button class="btn btn-secondary" data-a="shareMenu" aria-expanded="${S.pop==='share'}">${I('share','sm')}Share</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:48px;top:52px')}${finMore('right:0;top:52px')}</span></div>
@@ -1947,7 +1984,7 @@ function buildCtl(){const opts=['D','M'].map(g=>`<optgroup label="${g==='D'?'Des
  $('#off').onchange=e=>{S.offline=e.target.checked;toast(S.offline?'You’re offline. Changes will sync when you reconnect.':'Back online',{icon:S.offline?'wifi':'check'});};
  $('#reset').onclick=()=>{Object.assign(S,{pages:1,savedTo:{},barHidden:false,screen:'home',hist:[],cat:'All',loading:true,saved:new Set(),liked:new Set(),following:false,comments:JSON.parse(JSON.stringify(COMMENTS0)),fin:JSON.parse(JSON.stringify(FIN_COMMENTS0)),finLiked:new Set(),pop:null,sheet:null,select:null,filter:'progress',projects:baseProjects(),cur:null,draft:null,errors:{},lightbox:null,finSearch:'',open:null,ask:null,confirm:false});render(true);setTimeout(()=>{S.loading=false;render();},700);};}
 window.addEventListener('resize',()=>{if(S.auto){const want=window.innerWidth<760?'mobile':'desktop';if(want!==S.dev){S.dev=want;if(want==='desktop'&&S.screen==='overview')S.screen='project';render();return;}}
- if(window.innerWidth<760&&S.dev==='desktop'){S.dev='mobile';render();}syncCtl();});
+ if(window.innerWidth<760&&S.dev==='desktop'){S.dev='mobile';render();}else if(S.dev==='desktop'){const c=colCount();if(c!==S._cols){S._cols=c;clearTimeout(S._rt);S._rt=setTimeout(render,120);}}syncCtl();});
 
 buildCtl();S.dev=window.innerWidth<760?'mobile':'desktop';render(true);setTimeout(()=>{S.loading=false;render();},700);
 })();
