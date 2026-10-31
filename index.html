@@ -422,7 +422,7 @@ textarea.inp{min-height:80px;resize:vertical}
 .ask .q{align-self:flex-end;background:var(--sel);color:var(--on-sel);padding:8px 12px;border-radius:var(--r-400) var(--r-400) var(--r-100) var(--r-400);max-width:85%}
 .ask .a{align-self:flex-start;background:var(--surface);padding:8px 12px;border-radius:var(--r-400) var(--r-400) var(--r-400) var(--r-100);max-width:90%}
 .side-card{display:flex;flex-direction:column;gap:20px}
-.side-card .cov{aspect-ratio:3/4;border-radius:var(--r-l);overflow:hidden}
+.side-card .cov{aspect-ratio:2/3;border-radius:var(--r-l);overflow:hidden}
 .side-card .cov img{width:100%;height:100%;object-fit:cover}
 .confirm{border-radius:var(--r-m);background:var(--subtle);padding:16px;display:flex;flex-direction:column;gap:12px}
 .confirm .row{display:flex;gap:8px;flex-wrap:wrap}
@@ -833,6 +833,27 @@ button.ref:hover{background:var(--subtle)}
 .ref-tx span{display:flex;align-items:center;gap:4px;color:var(--fg2);font-size:var(--fs-100)}
 .next.nx .btn-secondary{background:var(--surface)}
 .next.nx .btn-secondary:hover{background:var(--bg)}
+
+/* round 19: top step card in the dropdown step style */
+.next.nx{display:block;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden}
+.next.nx .nx-undo{margin:0;border-bottom:1px solid var(--line)}
+.nx-h{display:flex;align-items:center;gap:12px;padding:12px 16px}
+.nx-h .st{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--subtle);flex:none}
+.nx-h .st.done{background:var(--sel);color:var(--on-sel)}
+.nx-h .st.cur{background:var(--accent);color:var(--on-accent)}
+.nx-lab{flex:1;min-width:0;font-weight:var(--fw-semi);font-size:var(--fs-200)}
+.nx-dur{display:inline-flex;align-items:center;gap:6px;color:var(--fg2);font-size:var(--fs-200);white-space:nowrap}
+.nx-back{font-size:var(--fs-200)}
+.nx-row{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:4px 16px 16px 56px;align-items:start}
+.next.nx .nx-b h2{margin:0 0 4px}
+.next.nx .nx-b .lnk-row{margin-top:8px}
+.next.nx .btn-secondary{background:var(--subtle)}
+.next.nx .btn-secondary:hover{background:var(--subtle-hover)}
+.next.nx .ask{margin-top:12px}
+.dev-mobile .nx-row{grid-template-columns:1fr;padding:4px 16px 16px}
+.dev-mobile .nx-h{flex-wrap:wrap}
+.dev-mobile .nx-back{width:100%;text-align:left;padding-left:40px}
+@media (max-width:900px){.nx-row{grid-template-columns:1fr;padding-left:16px}}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1009,7 +1030,7 @@ const soon=n=>toast(`${n} isn’t part of this prototype`,{icon:'sparkle'});
 const proj=()=>S.projects.find(p=>p.id===S.cur);
 function curY(){const sc=$('.app .scroller');return S.dev==='desktop'?window.scrollY:(sc?sc.scrollTop:0);}
 function go(screen,o={}){if(!o.replace)S.hist.push({screen:S.screen,pinId:S.pinId,cur:S.cur,y:curY()});S.barHidden=false;S.screen=screen;Object.assign(S,o.set||{});
- S.pop=null;S.sheet=o.sheet||null;S.select=null;S.selected.clear();S.lightbox=null;S.confirm=false;S.ask=null;S.reply=null;render(true);}
+ S.pop=null;S.focus=null;S.sheet=o.sheet||null;S.select=null;S.selected.clear();S.lightbox=null;S.confirm=false;S.ask=null;S.reply=null;render(true);}
 function back(){const h=S.hist.pop();if(!h){go('home',{replace:true});return;}S.screen=h.screen;S.pinId=h.pinId;S.cur=h.cur;S.pop=null;S.sheet=null;S.lightbox=null;S.select=null;S.selected.clear();S.barHidden=false;render(true,h.y||0);}
 
 /* ---------- shared bits ---------- */
@@ -1224,13 +1245,24 @@ function materials(p){const have=p.materials.filter(x=>x.have).length;const miss
  ${S.pop==='shop'?`<div class="confirm"><b>Missing</b>${miss.map(x=>`<div class="row-sb"><span>${esc(x.t)}</span><span style="display:flex;gap:6px"><button class="btn btn-secondary xs" data-a="toastMsg" data-v="Opening shopping results">Find it</button><button class="btn btn-dark xs" data-a="haveIt" data-t="${esc(x.t)}">I have it</button></span></div>`).join('')}</div>`:''}
  <div class="list">${p.materials.map((x,i)=>`<button class="check" role="checkbox" aria-checked="${x.have}" data-a="pmat" data-i="${i}"><span class="box">${x.have?I('check','sm'):''}</span><span class="t">${esc(x.t)}</span></button>`).join('')||'<span class="help">No materials listed.</span>'}</div></div>`;}
 function nextCard(p,m){const n=nextIdx(p);const d=stepsDone(p);
- if(n==null)return `<div class="next" style="grid-template-columns:1fr auto"><div><small>All ${p.steps.length} steps done</small><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><button class="btn btn-primary" data-a="complete">Complete project</button></div>`;
- const s=p.steps[n];const jd=S.justDone!=null&&p.steps[S.justDone]&&p.steps[S.justDone].done?S.justDone:null;
- return `<div class="next nx" id="next-card">${jd!=null?`<div class="undo-inline nx-undo" role="status">${I('check','sm')}<span>Step ${jd+1} done</span><button class="link" data-a="undoDone" data-i="${jd}">Undo</button></div>`:''}<div class="im">${s.img?img(s.img,s.t):`<span class="ph-txt" style="height:100%;background:var(--surface)">${n+1}</span>`}</div><div class="nx-b"><small>Next step · ${d} of ${p.steps.length} done</small><h2>Step ${n+1} · ${esc(s.t)}</h2><p>${esc([s.dur,s.meta].filter(Boolean).join(' · '))}</p><ul>${s.b.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
- <div class="acts"><button class="btn btn-primary mark-done" data-a="done" data-i="${n}">Mark done</button><button class="btn btn-secondary" data-a="askNext" data-i="${n}">${I('sparkle','sm')}Ask about this step</button></div></div></div>`;}
+ if(n==null&&S.focus==null)return `<div class="next" style="grid-template-columns:1fr auto"><div><small>All ${p.steps.length} steps done</small><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><button class="btn btn-primary" data-a="complete">Complete project</button></div>`;
+ const i=S.focus!=null&&p.steps[S.focus]?S.focus:n;const s=p.steps[i];const last=d-1;ensureWip(p);
+ const st=s.done?'done':s.wip?'cur':'';const jd=S.justDone!=null&&p.steps[S.justDone]&&p.steps[S.justDone].done?S.justDone:null;
+ const lab=i===n?`Next step · ${d} of ${p.steps.length} done`:s.done?`Done ${esc(s.date||'')}`:s.wip?'In progress':'To start';
+ const acts=s.done?(i===last?`<button class="btn btn-secondary" data-a="undone" data-i="${i}">${I('undo','sm')}Mark not done</button>`:'')
+  :i===n?`<button class="btn btn-primary mark-done" data-a="done" data-i="${i}">Mark done</button>`
+  :`<button class="btn btn-secondary" data-a="mv" data-i="${i}" data-to="${s.wip?'todo':'wip'}">${s.wip?'Move back to To start':'Start this step'}</button>`;
+ return `<div class="next nx" id="next-card">${jd!=null?`<div class="undo-inline nx-undo" role="status">${I('check','sm')}<span>Step ${jd+1} done</span><button class="link" data-a="undoDone" data-i="${jd}">Undo</button></div>`:''}
+ <div class="nx-h"><span class="st ${st}">${s.done?I('check','sm'):s.wip?I('clock','sm'):`<b style="font-size:12px">${i+1}</b>`}</span><span class="nx-lab">${lab}</span><span class="nx-dur">${I('clock','sm')}${esc(s.dur)}</span>${i!==n&&n!=null?`<button class="link nx-back" data-a="focusNext">Back to next step</button>`:''}</div>
+ <div class="nx-row"><div class="im">${s.img?img(s.img,s.t):`<span class="ph-txt" style="height:100%;background:var(--surface)">${i+1}</span>`}</div><div class="nx-b"><h2>Step ${i+1} · ${esc(s.t)}</h2>${s.meta?`<p>${esc(s.meta)}</p>`:''}<ul>${s.b.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+ ${s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:''}
+ <label class="lnk-row" style="cursor:pointer">${I('upload','sm')}Upload work<input type="file" accept="image/*" data-up="${i}" hidden></label>
+ ${(s.uploads||[]).length?`<div class="uploads">${s.uploads.map(u=>`<img src="${u}" alt="Your progress photo">`).join('')}</div>`:''}
+ ${S.ask===i?`<div class="ask"><span class="q">Any tips for ${esc(s.t.toLowerCase())}?</span><span class="a">${esc(ASK[i]||'Go slowly and check the Pin’s tutorial photos as you work. Mark the step done when you’re happy with it.')}</span><form class="addrow" data-f="ask" data-i="${i}"><input class="inp" id="ask-${i}" placeholder="Ask a follow-up" autocomplete="off"><button class="btn btn-dark sm">Ask</button></form></div>`:''}
+ <div class="acts">${acts}<button class="btn btn-secondary" data-a="askStep" data-i="${i}" aria-pressed="${S.ask===i}">${I('sparkle','sm')}Ask about this step</button></div>${!s.done&&n!=null&&i!==n?`<p class="help step-order">You can mark this step done after Step ${n+1}.</p>`:''}</div></div></div>`;}
 function completeBlock(p){const left=p.steps.length-stepsDone(p);if(!left)S.confirm=false;
  const err=S.confirm?`<div class="gentle-err" id="gentle-err" role="alert" tabindex="-1"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><path class="mk" d="M12 6.5v7" stroke-width="2.4" stroke-linecap="round"/><circle class="mkd" cx="12" cy="17.3" r="1.4"/></svg></span><p id="ge-t"><b>You have ${left} step${left>1?'s':''} left.</b> Mark ${left>1?'them':'it'} done to complete this project.</p></div>`:'';
- return `${err}<button class="btn btn-primary" style="width:100%" data-a="complete" ${S.confirm?'aria-disabled="true" aria-describedby="ge-t"':''}>Complete project</button>`;}
+ return left?`<button class="btn btn-secondary" style="width:100%" data-a="saveProgress">Save progress</button>`:`${err}<button class="btn btn-primary" style="width:100%" data-a="complete">Complete project</button>`;}
 function statusPill(p){const L={progress:'In progress',want:'Want to make',paused:'Paused',made:'Made it'};
  return `<span style="position:relative"><button class="status ${p.status}" data-a="statusMenu" aria-expanded="${S.pop==='status'}"><span class="dot"></span>${L[p.status]}${I('down','sm')}</button>
  ${S.pop==='status'?`<div class="click-catch" style="position:fixed" data-a="closePop"></div><div class="menu" style="left:0;top:40px" role="menu">${['progress','want','paused'].map(k=>`<button class="mi" role="menuitemradio" aria-checked="${p.status===k}" data-a="setStatus" data-v="${k}">${L[k]}</button>`).join('')}</div>`:''}</span>`;}
@@ -1256,8 +1288,7 @@ function overviewSide(p,m){const t=S.side;const dn=p.steps.filter(s=>s.done&&s.d
  return `<div class="side-card"><div class="tabs" role="tablist">${[['overview','Overview'],['activity','Activity'],['files','Files']].map(([k,l])=>`<button class="tab" role="tab" data-a="side" data-v="${k}" aria-selected="${t===k}">${l}</button>`).join('')}</div>${body}</div>`;}
 function dProject(){const p=proj();
  return dShell(`<div class="cp-top"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1>${statusPill(p)}<button class="btn btn-secondary" data-a="editProj">Edit</button><button class="btn btn-primary" data-a="saveProj">Save</button></div>
- <div class="pp"><div class="pp-main">${nextCard(p,false)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${materials(p)}
- <div class="sec"><h2 class="sec-title">Steps</h2><div>${p.steps.map((s,i)=>stepAcc(p,i,false)).join('')}</div></div>${completeBlock(p)}</div>${overviewSide(p,false)}</div>`,{top:false});}
+ <div class="pp"><div class="pp-main">${nextCard(p,false)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${materials(p)}${completeBlock(p)}</div>${overviewSide(p,false)}</div>`,{top:false});}
 
 /* ----- finished ----- */
 function finPhotos(p){return p.steps.map((s,i)=>({img:s.img||p.cover,t:s.t,i,date:s.date}));}
@@ -1323,7 +1354,7 @@ function mOverview(){const p=proj();return `${mStatus()}<div class="m-head"><but
  ${mTabs('overview')}<div class="m-body" style="padding-top:0"><div style="border-radius:var(--r-l);overflow:hidden;aspect-ratio:358/478">${img(p.cover,p.title)}</div>
  <div style="display:flex;align-items:center;gap:8px;margin:16px 0 8px"><h1 style="font-size:var(--fs-400);margin:0;flex:1">${esc(p.title)}</h1>${statusPill(p)}</div>${overviewSide(p,true)}</div>`;}
 function mRoadmap(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1><button class="btn btn-secondary sm" data-a="editProj">Edit</button></div>
- ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px">${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${materials(p)}<div class="sec"><h2 class="sec-title">Steps</h2><div>${p.steps.map((s,i)=>stepAcc(p,i,true)).join('')}</div></div>${completeBlock(p)}</div>`;}
+ ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px">${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${materials(p)}${completeBlock(p)}</div>`;}
 function mFinished(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="navHub" aria-label="Back to projects">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="shareMenu" aria-label="Share">${I('share')}</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:56px;top:100px')}${finMore('right:12px;top:100px')}</div>
  <div class="m-body" style="padding-top:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h1 style="font-size:var(--fs-500);margin:0">${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help" style="width:100%">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span></div>${finBody(p,true)}</div>`;}
 
@@ -1366,8 +1397,8 @@ function createProject(status){const d=S.draft;
   S.projects=S.projects.filter(x=>x.id!==id);S.projects.unshift(p);S.cur=id;d.creating=false;S.draft=null;S.open=0;
   if(status==='want'){go('hub',{replace:true,set:{filter:'want'}});toast('Saved to Want to make',{action:'View',fn:()=>{S.cur=id;go(S.dev==='mobile'?'overview':'project');}});}
   else{S.open=0;go('project',{replace:true});toast('Project created. Step 1 is ready when you are.');}},S.dev==='mobile'?700:900);}
-function markDone(i,v){const p=proj();const s=p.steps[i];s.done=v;s.wip=!v;
- if(v){s.date=s.date||'Today';p.activity.unshift({t:`Marked Step ${i+1} · ${s.t} done`,d:s.date});const n=nextIdx(p);S.open=n;S.ask=null;
+function markDone(i,v){const p=proj();const s=p.steps[i];s.done=v;s.wip=!v;S.focus=null;
+ if(v){s.date=s.date||'Today';p.activity.unshift({t:`Marked Step ${i+1} · ${s.t} done`,d:s.date});const n=nextIdx(p);if(n!=null)p.steps[n].wip=true;S.open=n;S.ask=null;
   if(S.dev==='mobile'){S.justDone=i;render();return;}
   S.justDone=null;render();
   toast(`Step ${i+1} done. ${stepsDone(p)} of ${p.steps.length} complete`,{action:'Undo',fn:()=>{s.done=false;s.wip=true;p.activity.shift();S.open=i;render();}});}
@@ -1442,13 +1473,14 @@ const A={
  saveProj:()=>{S.offline?toast('You’re offline. Changes will sync when you reconnect.',{icon:'wifi'}):toast('Project saved');},
  continue:()=>{const p=proj();S.open=nextIdx(p);render();const el=$('#step-'+S.open);el&&el.scrollIntoView({behavior:'smooth',block:'center'});},
  toggleStep:el=>{const i=+el.dataset.i;S.justDone=null;S.open=S.open===i?null:i;S.ask=null;render();},
- gotoStep:el=>{const i=+el.dataset.i;S.open=i;render();const x=$('#step-'+i);x&&x.scrollIntoView({behavior:'smooth',block:'center'});},
+ gotoStep:el=>{const i=+el.dataset.i;const p=proj();S.focus=i===nextIdx(p)?null:i;S.ask=null;S.justDone=null;render();const x=$('#next-card');x&&x.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});},
+ focusNext:()=>{S.focus=null;S.ask=null;render();},
  done:el=>markDone(+el.dataset.i,true),
  undoDone:el=>{const i=+el.dataset.i;const p=proj();const x=p.steps[i];x.done=false;x.wip=true;p.activity.shift();S.justDone=null;S.open=i;render();},
  moveMenu:el=>{const i=+el.dataset.i;S.moveMenu=S.moveMenu===i?null:i;render();const m=$('.rmenu [role="menuitem"]');m&&m.focus();},
  mv:el=>{const i=+el.dataset.i;const ok=moveStep(i,el.dataset.to);if(ok)setTimeout(()=>{const c=document.querySelector(`[data-drag="${i}"] .rmove`);c&&c.focus({preventScroll:true});},0);},undone:el=>markDone(+el.dataset.i,false),
  askNext:el=>{const i=+el.dataset.i;S.open=i;S.ask=i;render();const x=$('#step-'+i);x&&x.scrollIntoView({behavior:'smooth',block:'center'});const f=$('#ask-'+i);f&&f.focus({preventScroll:true});},
- askStep:el=>{const i=+el.dataset.i;S.ask=S.ask===i?null:i;render();},
+ askStep:el=>{const i=+el.dataset.i;S.ask=S.ask===i?null:i;render();const f=$('#ask-'+i);f&&f.focus({preventScroll:true});},
  shop:()=>{S.pop=S.pop==='shop'?null:'shop';render();},
  haveIt:el=>{const p=proj();p.materials.find(x=>x.t===el.dataset.t).have=true;S.pop=null;render();toast('Marked as ready');},
  pmat:el=>{const x=proj().materials[+el.dataset.i];x.have=!x.have;render();},
@@ -1459,6 +1491,7 @@ const A={
  toRoadmap:()=>{const p=proj();S.open=nextIdx(p);go('project');},
  complete:()=>{const p=proj();if(nextIdx(p)!=null){S.confirm=true;render();const e=document.getElementById('gentle-err');if(e){e.focus({preventScroll:true});e.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}}else finish();},
  completeYes:finish,
+ saveProgress:()=>{const p=proj();p.status='progress';S.offline?toast('You’re offline. Your progress will sync when you reconnect.',{icon:'wifi'}):toast(`Progress saved. ${stepsDone(p)} of ${p.steps.length} steps done`);},
  // finished
  shareMenu:()=>{S.pop=S.pop==='share'?null:'share';render();},
  shareTo:el=>{S.pop=null;render();if(S.offline){toast('Couldn’t share while offline.',{err:true,action:'Retry',fn:()=>A.shareTo(el)});return;}toast(el.dataset.v,{action:'View',fn:()=>go('pin',{set:{pinId:proj().pinId||'p27'}})});},
