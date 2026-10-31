@@ -1039,6 +1039,10 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .dev-mobile .next.nx .acts{flex-wrap:nowrap}
 .dev-mobile .next.nx .acts .btn{flex:1 1 auto;padding:0 12px;white-space:nowrap}
 .ps-grid.m{scroll-padding-left:16px}
+/* r34: Make this under the title, left aligned */
+.make-row{justify-content:flex-start;margin:0}
+.m-body .make-row{margin:0 0 16px}
+.make-row .tipwrap .tip{right:auto;left:calc(100% + 8px);top:50%;bottom:auto;transform:translateY(-50%);white-space:nowrap}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1337,9 +1341,8 @@ function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const li
  <article class="closeup"><div class="imgc">${img(id,p.t)}<button class="ib glass" data-a="back" aria-label="Back" style="position:absolute;left:16px;top:16px">${I('back')}</button><div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
  <div class="side"><div class="bar"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="focusComment" aria-label="Comment">${I('chat')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><button class="ib" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button>
  <span style="flex:1"></span><button class="boardpick" data-a="soon" data-v="Pick a board" aria-label="Board: ${esc(SAVED[0].n)}"><span>${esc(SAVED[0].n)}</span>${I('down','sm')}</button><button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
- ${makeCard(id)}
  <button class="link" data-a="visit" data-id="${id}" style="align-self:flex-start;font-weight:500">${esc(p.src)}</button>
- <h1>${esc(p.t)}</h1><p style="margin:0;color:var(--fg2)">${esc(desc)}</p>
+ <h1>${esc(p.t)}</h1>${makeCard(id)}<p style="margin:0;color:var(--fg2)">${esc(desc)}</p>
  <button class="btn btn-secondary" style="width:100%" data-a="visit" data-id="${id}">Visit site</button>
  <div class="creator">${av(p.by,'b')}<span class="meta"><b>${esc(p.by)}</b><span>12.4k followers</span></span><button class="btn ${S.following?'btn-dark':'btn-secondary'}" data-a="follow" aria-pressed="${S.following}">${S.following?'Following':'Follow'}</button></div>
  ${commentsBlock(id)}</div></article></div>
@@ -1561,9 +1564,9 @@ function mHome(){return `${mStatus()}<div class="m-head collapse col${S.barHidde
 function mPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
  return `${mStatus()}<div class="m-hero">${img(id,p.t)}<button class="ib glass tl" data-a="back" aria-label="Back">${I('back')}</button><button class="ib glass tr" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button><button class="ib glass" data-a="lightboxPin" style="position:absolute;right:12px;bottom:12px" aria-label="View full size">${I('expand')}</button></div>
  <div class="m-body" style="padding-top:0"><div class="m-actions"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><span class="sp"></span>
- <button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>${makeCard(id)}
+ <button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
  <div class="creator">${av(p.by,'b')}<span class="meta"><b>${esc(p.by)}</b></span><button class="btn btn-secondary sm" data-a="visit" data-id="${id}">Visit site</button></div>
- <h1 style="font-size:var(--fs-400);margin:16px 0 8px">${esc(p.t)}</h1>${commentsBlock(id)}
+ <h1 style="font-size:var(--fs-400);margin:16px 0 8px">${esc(p.t)}</h1>${makeCard(id)}${commentsBlock(id)}
  <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,8),(x)=>pinCard(x))}</div>${pinMoreMenu()}`;}
 function mBoard(){const b=bd();
  return `${mStatus()}<div class="m-head"><button class="ib" data-a="back" aria-label="Back">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="toastMsg" data-v="Board link copied" aria-label="Share">${I('share')}</button><button class="ib" data-a="soon" data-v="Board options" aria-label="More options">${I('more')}</button></div>
