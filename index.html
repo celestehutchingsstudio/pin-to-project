@@ -905,6 +905,21 @@ button.ref:hover{background:var(--subtle)}
 .dev-mobile .cal-wrap{grid-template-columns:1fr}
 .dev-mobile .cal-wrap.gal{grid-template-columns:none;grid-auto-columns:100%}
 .cal-more{display:flex;align-items:center;gap:4px;margin:8px 0 0;font-size:var(--fs-100);color:var(--fg2)}
+/* round 26: arrow for the vertical calendar layout */
+.cal-down{grid-column:1/-1;justify-self:center;display:flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:var(--r-pill);font-size:var(--fs-200);font-weight:var(--fw-semi);color:var(--fg);margin:-4px 0}
+.cal-down .ar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--subtle);animation:calNudge 1.6s ease-in-out 2}
+.cal-down:hover .ar{background:var(--subtle-hover)}
+@keyframes calNudge{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.cal-down .ar{animation:none}}
+button.cal-more{border-radius:var(--r-pill);padding:4px 8px 4px 4px;margin-left:-4px}
+button.cal-more:hover{background:var(--subtle);color:var(--fg)}
+/* round 26: start and end date pickers */
+.dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 8px}
+.dates input[type=date]{color-scheme:light;font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dates input[type=date]{color-scheme:dark}}
+:root[data-theme="dark"] .dates input[type=date]{color-scheme:dark}
+.dev-mobile .dates{gap:8px}
+.dev-mobile .dates .inp{padding:12px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1135,8 +1150,14 @@ function calendar(p,o={}){const s=p.start,e=p.end;const cks=new Set(checkins(p))
    const lab=`${MONTHS[m]} ${d}${k===s?', start':k===e?', finish':''}`;
    cells+=t?`<button class="${c}" data-a="pickDay" data-t="${t}" data-v="${k}" aria-label="${lab}" aria-pressed="${k===s||k===e}">${d}</button>`:`<span class="${c}">${d}</span>`;}
   const prev=t&&mi===0?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="-1" aria-label="Previous month">${I('left','sm')}</button>`:'';const next=t&&mi===lastI?`<button class="ib sm" data-a="calNav" data-t="${t}" data-v="1" aria-label="Next month">${I('right','sm')}</button>`:'';
-  return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${span>4?`<p class="cal-more">${I('right','sm')}Scroll sideways to see all ${span} months</p>`:''}`;}
-function calHelp(p){return `<span class="help">${p.pick==='end'?`Start is ${fmt(p.start)}. Now click the finish date.`:'Click a date to move the start, then click the finish date.'}</span>`;}
+  const perRow=S.dev==='mobile'?1:2;const down=span<=4&&span>perRow&&mi===perRow-1?`<button class="cal-down" data-a="calDown" aria-label="Scroll down to see all ${span} months"><span class="ar">${I('down')}</span>See all ${span} months</button>`:'';
+  return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>${down}`;}).join('')}</div>${span>4?`<button class="cal-more" data-a="calSide">${I('right','sm')}Scroll sideways to see all ${span} months</button>`:''}`;}
+function dateFields(p,t){const dis=p.creating?'disabled':'';return `<div class="dates">${[['start','Start date'],['end','End date']].map(([k,l])=>`<div class="field"><label for="f-${t}-${k}">${l}</label><input class="inp" type="date" id="f-${t}-${k}" data-dt="${k}" data-t="${t}" value="${p[k]}" ${k==='end'?`min="${p.start}"`:''} ${dis}></div>`).join('')}</div>`;}
+function setDate(t,k,v){const isP=t==='proj';const d=isP?proj():S.draft;if(!v)return;
+ if(k==='start'){const len=diff(d.start,d.end);d.start=v;if(d.end<v)d.end=addDays(v,len);}else{d.end=v<d.start?d.start:v;}
+ d.preset=[6,13,29].includes(diff(d.start,d.end))?{6:'week',13:'2w',29:'month'}[diff(d.start,d.end)]:'custom';d.calM=null;d.pick='start';render();
+ if(isP){d.activity.unshift({t:`Changed the timeline to ${fmt(d.start)} – ${fmt(d.end)}`,d:'Today'});toast(`Timeline updated: ${fmt(d.start)} – ${fmt(d.end)}`);}}
+function calHelp(p){return `<span class="help">${p.pick==='end'?`Start is ${fmt(p.start)}. Now click the end date.`:'Or click a start date, then an end date, on the calendar.'}</span>`;}
 function legend(){return `<div class="keyd"><i style="background:var(--sel)"></i>Start and finish <i style="box-shadow:inset 0 0 0 2px var(--accent)"></i>Check-in</div>`;}
 
 /* ============ DESKTOP ============ */
@@ -1244,7 +1265,7 @@ function createForm(m){const d=S.draft;const e=S.errors;const dis=d.creating?'di
  ${d.adding?`<form class="stile" data-f="addStep"><div class="im" style="display:grid;place-items:center;padding:8px"><input class="inp" id="f-step" placeholder="Step name" style="min-height:40px" autocomplete="off"></div><span style="display:flex;gap:6px"><button class="btn btn-dark xs">Add</button><button type="button" class="btn btn-ghost xs" data-a="cancelStep">Cancel</button></span></form>`:
  `<button class="stile add" data-a="addStep" ${dis}><span class="im">${I('plus','lg')}<b>Add step</b></span></button>`}</div></div>
  <div class="sec"><h2 class="sec-title">Timeline</h2><div class="chips"><span class="lab" style="align-self:center;${m?'width:100%':''}">Timeframe</span>${[['week','This week'],['2w','2 weeks'],['month','This month'],['custom','Custom']].map(([k,l])=>`<button class="chip round" data-a="preset" data-v="${k}" aria-pressed="${d.preset===k}" ${dis}>${l}</button>`).join('')}</div>
- <div class="keyd">${I('clock','sm')}Key dates: ${esc(keyDates(d))}</div>${calHelp(d)}
+ <div class="keyd">${I('clock','sm')}Key dates: ${esc(keyDates(d))}</div>${dateFields(d,'draft')}${calHelp(d)}
  ${calendar(d,{target:'draft'})}${legend()}</div>
  <div class="sec"><h2 class="sec-title">Notifications</h2><div class="chips">${[['off','Off'],['daily','Daily'],['weekly','Weekly']].map(([k,l])=>`<button class="chip round" data-a="notif" data-v="${k}" aria-pressed="${d.notif===k}" ${dis}>${l}</button>`).join('')}</div>
  ${d.notif==='weekly'?`<span class="lab">Check in on</span><div class="chips">${DAYS.map(x=>`<button class="chip sq round" data-a="day" data-v="${x}" aria-pressed="${d.day===x}" aria-label="${x}" ${dis}>${x[0]}</button>`).join('')}</div><span class="help">Every ${({Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'})[d.day]}. Gentle check-ins only, and you can turn them off anytime.</span>`:d.notif==='daily'?'<span class="help">A short nudge each evening at 7 pm.</span>':'<span class="help">No reminders. You can still see the timeline.</span>'}</div>
@@ -1338,7 +1359,7 @@ function refRow(r,src,o={}){const id=/^Pin: /.test(r)?PIN_BY_T[r.slice(5)]:null;
  return o.rm!=null?`<div class="ref">${body}<button class="ib sm" data-a="rmRef" data-i="${o.rm}" aria-label="Remove ${esc(label)}">${I('x','sm')}</button></div>`
   :`<button class="ref" data-a="toastMsg" data-v="${site?'Opens '+esc(site)+' in a new tab':'Opening '+esc(label)}">${body}${I('right','sm')}</button>`;}
 function timelineSec(p){const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const [mo,da]=s.date.split(' ');return iso(new Date(2026,MON.indexOf(mo),+da));});
- return `<div class="sec tl-sec"><h2 class="sec-title">Calendar</h2><span>${fmt(p.start)} – ${fmt(p.end)} · ${Math.round((diff(p.start,p.end)+1)/7)||1} week${Math.round((diff(p.start,p.end)+1)/7)>1?'s':''}</span><div class="keyd">${I('clock','sm')}Key dates: ${esc(keyDates(p))}</div>${p.status==='made'?'':calHelp(p)}${calendar(p,{done:dn,target:p.status==='made'?null:'proj'})}${legend()}</div>`;}
+ return `<div class="sec tl-sec"><h2 class="sec-title">Calendar</h2><span>${fmt(p.start)} – ${fmt(p.end)} · ${Math.round((diff(p.start,p.end)+1)/7)||1} week${Math.round((diff(p.start,p.end)+1)/7)>1?'s':''}</span><div class="keyd">${I('clock','sm')}Key dates: ${esc(keyDates(p))}</div>${p.status==='made'?'':dateFields(p,'proj')+calHelp(p)}${calendar(p,{done:dn,target:p.status==='made'?null:'proj'})}${legend()}</div>`;}
 function overviewSide(p,m){const t=S.side;const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const [mo,da]=s.date.split(' ');return iso(new Date(2026,MON.indexOf(mo),+da));});
  let body='';
  if(t==='activity') body=`<div class="list" style="gap:12px">${p.activity.map(a=>`<div class="feed-item"><span class="dot"></span><span>${esc(a.t)}<small>${esc(a.d)}</small></span></div>`).join('')}</div>`;
@@ -1523,6 +1544,8 @@ const A={
   if(d.pick!=='end'){d.start=v;if(d.end<v)d.end=v;d.pick='end';}else{if(v<d.start){d.end=d.start;d.start=v;}else d.end=v;d.pick='start';vis=null;}
   d.preset=[6,13,29].includes(diff(d.start,d.end))?{6:'week',13:'2w',29:'month'}[diff(d.start,d.end)]:'custom';d.calM=vis;render();
   if(isP&&d.pick==='start'){d.activity.unshift({t:`Changed the timeline to ${fmt(d.start)} – ${fmt(d.end)}`,d:'Today'});toast(`Timeline updated: ${fmt(d.start)} – ${fmt(d.end)}`,{icon:'clock'});}},
+ calDown:el=>{const nx=el.nextElementSibling;if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'});},
+ calSide:el=>{const w=el.previousElementSibling;const c=w&&w.querySelector('.cal');if(w&&c)w.scrollBy({left:c.offsetWidth+16,behavior:'smooth'});},
  calNav:el=>{const d=el.dataset.t==='proj'?proj():S.draft;const cur=d.calM!=null?d.calM:(D(d.start).getFullYear()*12+D(d.start).getMonth());d.calM=cur+(+el.dataset.v);render();},
  rmRef:el=>{S.draft.refs.splice(+el.dataset.i,1);render();},addRef:()=>{S.draft.addingRef=true;render();$('#f-ref').focus();},cancelRef:()=>{S.draft.addingRef=false;render();},
  mat:el=>{const x=S.draft.materials[+el.dataset.i];x.have=!x.have;render();},addMat:()=>{S.draft.addingMat=true;render();$('#f-mat').focus();},cancelMat:()=>{S.draft.addingMat=false;render();},
@@ -1609,7 +1632,7 @@ document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');
 document.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;
  if(k==='title'||k==='desc'){S.draft[k]=e.target.value;if(k==='title'&&S.errors.title&&e.target.value.trim()){S.errors.title=false;e.target.classList.remove('err');e.target.setAttribute('aria-invalid','false');const m=$('#f-title-err');m&&m.remove();}}
  if(k==='finSearch'){S.finSearch=e.target.value;const pos=e.target.selectionStart;render();const n=$('#q-fin');n.focus();n.setSelectionRange(pos,pos);}});
-document.addEventListener('change',e=>{const i=e.target.dataset.up;if(i==null)return;const file=e.target.files[0];if(!file)return;const r=new FileReader();
+document.addEventListener('change',e=>{if(e.target.dataset.dt){setDate(e.target.dataset.t,e.target.dataset.dt,e.target.value);return;}const i=e.target.dataset.up;if(i==null)return;const file=e.target.files[0];if(!file)return;const r=new FileReader();
  r.onload=()=>{const p=proj();const s=p.steps[+i];(s.uploads=s.uploads||[]).push(r.result);p.activity.unshift({t:`Added a photo to Step ${+i+1}`,d:'Today'});render();toast('Photo added to this step');};r.readAsDataURL(file);});
 
 /* ---------- scroll ---------- */
