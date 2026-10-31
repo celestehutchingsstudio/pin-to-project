@@ -808,6 +808,13 @@ body{margin:0}
 .dev-desktop .sheet-bg{position:fixed}
 .dev-desktop .sheet{position:fixed;left:50%;top:50%;bottom:auto;right:auto;transform:translate(-50%,-50%);width:min(720px,calc(100vw - 48px));max-height:min(780px,calc(100vh - 64px));border-radius:var(--r-800);padding:16px 24px 24px;animation:fade .2s}
 .dev-desktop .sheet .grab{display:none}
+/* step actions: Pinterest primary for Mark done, quiet inline confirmation on mobile */
+.acc-b .acts .mark-done{order:-1}
+.dev-mobile .acc-b .acts .mark-done{width:100%;min-height:48px;font-size:var(--fs-300);border-radius:var(--r-400)}
+.undo-inline{display:flex;align-items:center;gap:8px;margin:-4px 16px 12px 64px;font-size:var(--fs-200);color:var(--fg2);animation:fade .2s}
+.undo-inline svg{color:var(--ok)}
+.undo-inline .link{margin-left:auto;font-weight:var(--fw-bold,700);color:var(--fg);text-decoration:underline;min-height:44px;padding:0 4px}
+@media (prefers-reduced-motion:reduce){.undo-inline{animation:none}}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1167,15 +1174,15 @@ function dCreate(){const d=S.draft;
 
 /* ----- project page ----- */
 function stepAcc(p,i,m){const s=p.steps[i];const n=nextIdx(p);const open=S.open===i;ensureWip(p);const st=s.done?'done':s.wip?'cur':'';const last=stepsDone(p)-1;
- return `<div class="acc ${open?'open':''}" id="step-${i}"><button class="acc-h" data-a="toggleStep" data-i="${i}" aria-expanded="${open}"><span class="st ${st}">${s.done?I('check','sm'):s.wip?I('clock','sm'):`<b style="font-size:12px">${i+1}</b>`}</span><span class="tt ${s.done?'done':''}">Step ${i+1} · ${esc(s.t)}${s.done&&s.date?` <span class="help">Done ${esc(s.date)}</span>`:''}</span><span class="help">${esc(s.dur)}</span>${I('down','chev')}</button>
+ return `<div class="acc ${open?'open':''}" id="step-${i}"><button class="acc-h" data-a="toggleStep" data-i="${i}" aria-expanded="${open}"><span class="st ${st}">${s.done?I('check','sm'):s.wip?I('clock','sm'):`<b style="font-size:12px">${i+1}</b>`}</span><span class="tt ${s.done?'done':''}">Step ${i+1} · ${esc(s.t)}${s.done&&s.date?` <span class="help">Done ${esc(s.date)}</span>`:''}</span><span class="help">${esc(s.dur)}</span>${I('down','chev')}</button>${S.justDone===i&&s.done?`<div class="undo-inline" role="status">${I('check','sm')}<span>Step ${i+1} done</span><button class="link" data-a="undoDone" data-i="${i}">Undo</button></div>`:''}
  ${open?`<div class="acc-b"><div style="display:flex;flex-direction:column;gap:12px;min-width:0"><ul>${s.b.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
  ${s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:''}
  <label class="lnk-row" style="cursor:pointer">${I('upload','sm')}Upload work<input type="file" accept="image/*" data-up="${i}" hidden></label>
  ${(s.uploads||[]).length?`<div class="uploads">${s.uploads.map(u=>`<img src="${u}" alt="Your progress photo">`).join('')}</div>`:''}</div>
  ${s.img?`<div class="im">${img(s.img,s.t)}</div>`:'<span></span>'}
  ${S.ask===i?`<div class="ask"><span class="q">Any tips for ${esc(s.t.toLowerCase())}?</span><span class="a">${esc(ASK[i]||'Go slowly and check the Pin’s tutorial photos as you work. Mark the step done when you’re happy with it.')}</span><form class="addrow" data-f="ask" data-i="${i}"><input class="inp" id="ask-${i}" placeholder="Ask a follow-up" autocomplete="off"><button class="btn btn-dark sm">Ask</button></form></div>`:''}
- <div class="acts"><button class="btn btn-secondary sm" data-a="askStep" data-i="${i}" aria-pressed="${S.ask===i}">${I('sparkle','sm')}Ask about this step</button><button class="btn btn-secondary sm" data-a="editProj">Edit</button>
- ${s.done?(i===last?`<button class="btn btn-secondary sm" data-a="undone" data-i="${i}">${I('undo','sm')}Mark not done</button>`:''):i===n?`<button class="btn btn-dark sm" data-a="done" data-i="${i}">${I('check','sm')}Mark done</button>`:`<button class="btn btn-secondary sm" data-a="mv" data-i="${i}" data-to="${s.wip?'todo':'wip'}">${s.wip?'Move back to To start':'Start this step'}</button>`}</div>${!s.done&&i!==n?`<p class="help step-order">You can mark this step done after Step ${n+1}.</p>`:''}</div>`:''}</div>`;}
+ <div class="acts">${!s.done&&i===n?`<button class="btn btn-primary sm mark-done" data-a="done" data-i="${i}">Mark done</button>`:''}<button class="btn btn-secondary sm" data-a="askStep" data-i="${i}" aria-pressed="${S.ask===i}">${I('sparkle','sm')}Ask about this step</button><button class="btn btn-secondary sm" data-a="editProj">Edit</button>
+ ${s.done?(i===last?`<button class="btn btn-secondary sm" data-a="undone" data-i="${i}">${I('undo','sm')}Mark not done</button>`:''):i===n?'':`<button class="btn btn-secondary sm" data-a="mv" data-i="${i}" data-to="${s.wip?'todo':'wip'}">${s.wip?'Move back to To start':'Start this step'}</button>`}</div>${!s.done&&i!==n?`<p class="help step-order">You can mark this step done after Step ${n+1}.</p>`:''}</div>`:''}</div>`;}
 function ensureWip(p){if(p._w)return;p._w=1;const n=nextIdx(p);if(n!=null&&!p.steps.some(x=>x.wip))p.steps[n].wip=true;}
 function stepCol(x){return x.done?'done':x.wip?'wip':'todo';}
 const COLS=[['todo','To start'],['wip','In progress'],['done','Complete']];const COLN={todo:'To start',wip:'In progress',done:'Complete'};
@@ -1333,7 +1340,9 @@ function createProject(status){const d=S.draft;
   if(status==='want'){go('hub',{replace:true,set:{filter:'want'}});toast('Saved to Want to make',{action:'View',fn:()=>{S.cur=id;go(S.dev==='mobile'?'overview':'project');}});}
   else{go(S.dev==='mobile'?'overview':'project',{replace:true});toast('Project created. Step 1 is ready when you are.');}},S.dev==='mobile'?700:900);}
 function markDone(i,v){const p=proj();const s=p.steps[i];s.done=v;s.wip=!v;
- if(v){s.date=s.date||'Today';p.activity.unshift({t:`Marked Step ${i+1} · ${s.t} done`,d:s.date});const n=nextIdx(p);S.open=n;S.ask=null;render();
+ if(v){s.date=s.date||'Today';p.activity.unshift({t:`Marked Step ${i+1} · ${s.t} done`,d:s.date});const n=nextIdx(p);S.open=n;S.ask=null;
+  if(S.dev==='mobile'){S.justDone=i;render();return;}
+  S.justDone=null;render();
   toast(`Step ${i+1} done. ${stepsDone(p)} of ${p.steps.length} complete`,{action:'Undo',fn:()=>{s.done=false;s.wip=true;p.activity.shift();S.open=i;render();}});}
  else{p.activity.unshift({t:`Reopened Step ${i+1} · ${s.t}`,d:'Today'});S.open=i;render();}}
 function finish(){const p=proj();p.steps.forEach(s=>{if(!s.done){s.done=true;s.date=s.date||'Nov 7';}});p.status='made';p.finished=p.id==='stamps'?'Nov 7':fmt(p.end);p.activity.unshift({t:'Completed the project',d:p.finished});
@@ -1404,9 +1413,10 @@ const A={
  editProj:()=>{const p=proj();S.draft=Object.assign(JSON.parse(JSON.stringify({fromPin:p.pinId,title:p.title,desc:p.desc,vis:p.vis,cover:p.cover,covers:p.coll.concat(p.steps.map(s=>s.img).filter(Boolean)),steps:p.steps,suggested:false,start:p.start,end:p.end,preset:p.preset,refs:p.refs,materials:p.materials,people:p.people,notif:p.notif,day:p.day})),{pick:null,creating:false});S.editing=true;S.errors={};go('create');},
  saveProj:()=>{S.offline?toast('You’re offline. Changes will sync when you reconnect.',{icon:'wifi'}):toast('Project saved');},
  continue:()=>{const p=proj();S.open=nextIdx(p);render();const el=$('#step-'+S.open);el&&el.scrollIntoView({behavior:'smooth',block:'center'});},
- toggleStep:el=>{const i=+el.dataset.i;S.open=S.open===i?null:i;S.ask=null;render();},
+ toggleStep:el=>{const i=+el.dataset.i;S.justDone=null;S.open=S.open===i?null:i;S.ask=null;render();},
  gotoStep:el=>{const i=+el.dataset.i;S.open=i;render();const x=$('#step-'+i);x&&x.scrollIntoView({behavior:'smooth',block:'center'});},
  done:el=>markDone(+el.dataset.i,true),
+ undoDone:el=>{const i=+el.dataset.i;const p=proj();const x=p.steps[i];x.done=false;x.wip=true;p.activity.shift();S.justDone=null;S.open=i;render();},
  moveMenu:el=>{const i=+el.dataset.i;S.moveMenu=S.moveMenu===i?null:i;render();const m=$('.rmenu [role="menuitem"]');m&&m.focus();},
  mv:el=>{const i=+el.dataset.i;const ok=moveStep(i,el.dataset.to);if(ok)setTimeout(()=>{const c=document.querySelector(`[data-drag="${i}"] .rmove`);c&&c.focus({preventScroll:true});},0);},undone:el=>markDone(+el.dataset.i,false),
  askStep:el=>{const i=+el.dataset.i;S.ask=S.ask===i?null:i;render();},
