@@ -1021,6 +1021,24 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .m-body .make-row{margin:-8px 0 16px}
 .make-card{display:none}
 .make-row .tipwrap .tip{bottom:auto;top:50%;right:calc(100% + 8px);transform:translateY(-50%)}
+/* r33: mobile progress page matches desktop */
+.m-stat{display:flex;align-items:center;gap:12px;margin-bottom:-8px}
+.m-stat .autosave{display:inline-flex;align-items:center;gap:4px}
+.dev-mobile .nx-row{grid-template-columns:1fr;grid-template-rows:auto;row-gap:16px}
+.dev-mobile .next.nx .im{grid-row:auto;aspect-ratio:16/9;width:100%}
+.dev-mobile .next.nx .nx-t{align-self:start}
+.dev-mobile .next.nx .nx-t h2{font-size:var(--fs-400)}
+.dev-mobile .next.nx .nx-b{grid-column:auto}
+.dev-mobile .next.nx .acts{flex-direction:row;flex-wrap:wrap;gap:8px}
+.dev-mobile .next.nx .acts .btn{width:auto}
+.dev-mobile .next.nx .mark-done{min-height:48px}
+.ps-grid.m{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:8px -16px 0;padding:0 16px 4px;scrollbar-width:none}
+.ps-grid.m::-webkit-scrollbar{display:none}
+.ps-grid.m .stile.ps{flex:0 0 136px;scroll-snap-align:start}
+.dev-mobile .ps-sec .row-sb,.dev-mobile .sec>.row-sb{flex-wrap:nowrap;gap:8px}
+.dev-mobile .next.nx .acts{flex-wrap:nowrap}
+.dev-mobile .next.nx .acts .btn{flex:1 1 auto;padding:0 12px;white-space:nowrap}
+.ps-grid.m{scroll-padding-left:16px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1312,7 +1330,7 @@ function commentRow(c,i,scope){const liked=(scope==='fin'?S.finLiked:S.liked).ha
  ${S.reply===scope+i?`<form class="addc" data-f="addReply" data-scope="${scope}" data-i="${i}" style="margin-top:8px"><label class="search pill"><input id="r-${scope}${i}" placeholder="Reply to ${esc(c.who)}" autocomplete="off"><button class="ib sm" aria-label="Send reply">${I('send','sm')}</button></label></form>`:''}
  ${(c.replies||[]).map(r=>`<div class="comment" style="margin-top:8px">${av('June')}<div class="body"><p style="margin:0"><b>June</b> ${esc(r)}</p><div class="acts"><span>Just now</span></div></div></div>`).join('')}</div></div>`;}
 
-function makeCard(id){return `<div class="make-row"><span class="tipwrap"><button class="btn btn-secondary" data-a="makeThis" data-id="${id}" aria-describedby="tip-make">${I('projects','sm')}Make this</button><span class="tip" role="tooltip" id="tip-make">Turn this into a project</span></span></div>`;}
+function makeCard(id){return `<div class="make-row"><span class="tipwrap"><button class="btn btn-secondary" data-a="makeThis" data-id="${id}" aria-describedby="tip-make">Make this</button><span class="tip" role="tooltip" id="tip-make">Turn this into a project</span></span></div>`;}
 function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
  const desc=id==='p27'?'Four botanical postage stamps stitched in white on blue linen. Free pattern and video tutorial on the blog.':`Saved from ${p.src}.`;
  return dShell(`<div class="d-body"><div style="position:relative">
@@ -1563,8 +1581,8 @@ const mTabs=k=>`<div class="tabs m-ptabs" role="tablist">${[['project','Steps'],
 function mOverview(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><span style="flex:1"></span><span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}Saved</span><button class="btn btn-secondary sm" data-a="editProj">Edit</button></div>
  ${mTabs('overview')}<div class="m-body" style="padding-top:0"><div style="border-radius:var(--r-l);overflow:hidden;aspect-ratio:358/478">${img(p.cover,p.title)}</div>
  <div style="display:flex;align-items:center;gap:8px;margin:16px 0 8px"><h1 style="font-size:var(--fs-400);margin:0;flex:1">${esc(p.title)}</h1>${statusPill(p)}</div>${overviewSide(p,true)}</div>`;}
-function mRoadmap(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1><span class="autosave" role="status" title="Changes save automatically" aria-label="Saved">${I('check','sm')}</span><button class="btn btn-secondary sm" data-a="editProj">Edit</button></div>
- ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px">${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,true)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>`;}
+function mRoadmap(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="closeProject" aria-label="Close">${I('x')}</button><h1>${esc(p.title)}</h1><button class="btn btn-secondary sm" data-a="editProj">Edit</button></div>
+ ${mTabs('project')}<div class="m-body" style="display:flex;flex-direction:column;gap:24px"><div class="m-stat">${statusPill(p)}<span class="autosave" role="status" title="Changes save automatically">${I('check','sm')}${S.offline?'Saved on this device':'Saved'}</span></div>${nextCard(p,true)}<div class="sec"><h2 class="sec-title">Roadmap</h2>${roadmap(p)}</div>${projSteps(p,true)}${materials(p)}${timelineSec(p)}${completeBlock(p)}</div>`;}
 function mFinished(){const p=proj();return `${mStatus()}<div class="m-head"><button class="ib" data-a="navHub" aria-label="Back to projects">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="shareMenu" aria-label="Share">${I('share')}</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:56px;top:100px')}${finMore('right:12px;top:100px')}</div>
  <div class="m-body" style="padding-top:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h1 style="font-size:var(--fs-500);margin:0">${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help" style="width:100%">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span></div>${finBody(p,true)}</div>`;}
 
