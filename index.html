@@ -1141,6 +1141,26 @@ input::placeholder,textarea::placeholder{color:var(--ph);opacity:1}
 .dev-desktop .photos{grid-template-columns:repeat(auto-fill,minmax(clamp(180px,14vw,320px),1fr))}
 @media (max-width:1180px){.cp,.pp{grid-template-columns:1fr}.fin-top{grid-template-columns:minmax(240px,320px) minmax(0,1fr)}}
 @media (max-width:900px){.closeup{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fin-top{grid-template-columns:minmax(200px,260px) minmax(0,1fr)}}
+/* r48 Pin close-up matches Pinterest: centered 1016px card, back arrow outside, natural-ratio image, stacks to 508px */
+.cu-wrap{position:relative;padding:8px 0 0}
+.cu-back{position:absolute;left:0;top:8px;z-index:4;width:48px;height:48px}
+.closeup{max-width:1016px;margin:0 auto 32px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;border-radius:32px;box-shadow:0 1px 20px rgba(0,0,0,.1)}
+.closeup .imgc{align-self:start;border-radius:32px 0 0 32px;overflow:hidden}
+.closeup .imgc img{display:block;width:100%;height:auto;object-fit:contain}
+.closeup .side{padding:0 32px 32px}
+.closeup .bar{margin:0 -32px;padding:24px 32px 12px;border-radius:0 32px 0 0}
+.closeup .bar .boardpick{max-width:180px}
+.cu-more{justify-content:center;text-align:center;padding:16px 0 8px}
+.cu-more h2{font-size:var(--fs-400);font-weight:600}
+@media (max-width:1240px){.cu-wrap{padding-left:64px;padding-right:64px}}
+@media (max-width:1000px){
+ .cu-wrap{padding-left:0;padding-right:0}
+ .cu-back{top:16px;left:calc(50% - 254px + 16px);background:var(--surface)}
+ .closeup{max-width:508px;grid-template-columns:1fr}
+ .closeup .imgc{border-radius:32px 32px 0 0}
+ .closeup .bar{border-radius:0}
+}
+@media (max-width:560px){.cu-back{left:16px}}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1447,13 +1467,13 @@ function pinInfo(id,p,m){const desc=pinDesc(id,p);const more=S.descMore===id;con
  <h1 class="pi-t">${esc(p.t)}</h1>${m?'':makeCard(id)}
  <div class="pi-desc"><h2>Description</h2><p class="${more||!long?'':'clamp'}" id="pi-desc-${id}">${esc(desc)}</p>${long?`<button class="pi-more" data-a="descMore" data-id="${id}" aria-expanded="${more}" aria-controls="pi-desc-${id}">${more?'See less':'See more'}</button>`:''}</div>${visit}</div>`;}
 function dPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const liked=S.liked.has('pin'+id);
- return dShell(`<div class="d-body"><div style="position:relative">
- <article class="closeup"><div class="imgc">${img(id,p.t)}<button class="ib glass" data-a="back" aria-label="Back" style="position:absolute;left:16px;top:16px">${I('back')}</button><div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
+ return dShell(`<div class="d-body"><div class="cu-wrap"><button class="ib cu-back" data-a="back" aria-label="Back">${I('back')}</button>
+ <article class="closeup"><div class="imgc">${img(id,p.t)}<div class="img-tools"><button class="ib glass" data-a="lightboxPin" aria-label="View full size">${I('expand')}</button><button class="ib glass" data-a="soon" data-v="Visual search" aria-label="Search this image">${I('lens')}</button></div></div>
  <div class="side"><div class="bar"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="focusComment" aria-label="Comment">${I('chat')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><button class="ib" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button>
  <span style="flex:1"></span><button class="boardpick" data-a="soon" data-v="Pick a board" aria-label="Board: ${esc(SAVED[0].n)}"><span>${esc(SAVED[0].n)}</span>${I('down','sm')}</button><button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
  ${pinInfo(id,p,false)}
  ${commentsBlock(id)}</div></article></div>
- <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,10),(x)=>pinCard(x))}</div>${pinMoreMenu()}`);}
+ <div class="sec-h cu-more"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,10),(x)=>pinCard(x))}</div>${pinMoreMenu()}`);}
 
 function selBar(kind){const n=S.selected.size;
  if(kind==='pick')return `<div class="selbar" role="region" aria-label="Selection"><b>${n?`${n} Pin${n>1?'s':''} selected`:'Pick at least one Pin'}</b><button class="btn btn-primary sm" data-a="pickNext" ${n?'':'disabled'}>Next</button></div>`;
@@ -1652,7 +1672,7 @@ function finBody(p,m){const ph=finPhotos(p).filter(x=>!S.finSearch||x.t.toLowerC
  <div class="photos">${ph.map(x=>`<button class="photo" data-a="lb" data-i="${x.i}"><span class="im">${img(x.img,x.t)}</span><small>Step ${x.i+1}</small><b>${esc(x.t)}</b></button>`).join('')||'<span class="help">No steps match.</span>'}</div>
  <div class="sec" style="margin-top:32px"><h2 class="sec-title" style="font-size:var(--fs-300)">${S.fin.length} comments</h2>${S.fin.map((c,i)=>commentRow(c,i,'fin')).join('')}
  <form class="addc" data-f="finComment">${av('June')}<label class="search pill"><input id="c-fin" placeholder="Add a comment" aria-label="Add a comment" autocomplete="off"><button class="ib sm" aria-label="Post comment">${I('send','sm')}</button></label></form></div>
- <div class="sec-h"><h2>More to explore</h2></div>${grid(['p02','p09','p24','p06','p23','p26','p13','p03'],(id)=>pinCard(id))}`;}
+ <div class="sec-h cu-more"><h2>More to explore</h2></div>${grid(['p02','p09','p24','p06','p23','p26','p13','p03'],(id)=>pinCard(id))}`;}
 function dFinished(){const p=proj();
  return dShell(`<div class="d-body fin-page"><div class="fin-head"><h1>${esc(p.title)}</h1><span class="badge">${I('trophy','sm')}Made it</span><span class="help">Finished ${esc(p.finished)} · ${p.steps.length} steps · about 5 hours</span><span style="flex:1"></span>
  <span style="position:relative;display:flex;gap:8px"><button class="btn btn-secondary" data-a="shareMenu" aria-expanded="${S.pop==='share'}">${I('share','sm')}Share</button><button class="ib" data-a="finMore" aria-label="More options">${I('more')}</button>${shareMenu('right:48px;top:52px')}${finMore('right:0;top:52px')}</span></div>
@@ -1682,7 +1702,7 @@ function mPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const li
  <div class="m-body" style="padding-top:0"><div class="m-actions"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><span class="sp"></span>${makeCard(id)}
  <button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
  ${pinInfo(id,p,true)}${commentsBlock(id)}
- <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,8),(x)=>pinCard(x))}</div>${pinMoreMenu()}`;}
+ <div class="sec-h cu-more"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,8),(x)=>pinCard(x))}</div>${pinMoreMenu()}`;}
 function mBoard(){const b=bd();
  return `${mStatus()}<div class="m-head"><button class="ib" data-a="back" aria-label="Back">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="toastMsg" data-v="Board link copied" aria-label="Share">${I('share')}</button><button class="ib" data-a="soon" data-v="Board options" aria-label="More options">${I('more')}</button></div>
  <div class="m-body"><div class="bh m"><div class="bh-title"><h1>${esc(b.n)}</h1><div class="bh-meta"><span class="tag">${I('globe','sm')}Public board</span><span>· ${b.count} Pins</span></div></div>
