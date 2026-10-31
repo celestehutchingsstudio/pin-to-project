@@ -936,6 +936,33 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .dates{margin-right:72px}
 .dev-mobile .dates{margin-right:56px}
 .dev-mobile .dates{margin-right:0}
+/* round 28: arrow centred on the calendars; Gestalt-style date pickers */
+.cal-rail{display:flex;align-items:center;justify-content:center}
+.cal-arrow,.dev-mobile .cal-arrow{position:static;top:auto}
+.dp{position:relative}
+.dp-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;cursor:pointer;border-radius:16px;font-variant-numeric:tabular-nums}
+.dp-btn svg{color:var(--fg);flex:none}
+.dp-btn[aria-expanded="true"]{border-color:var(--fg);box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
+.dp .click-catch{position:fixed}
+.dp-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:40;width:320px;max-width:calc(100vw - 32px);background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:16px;animation:dpIn .15s ease-out}
+.dates .dp:last-child .dp-pop{left:auto;right:0}
+@keyframes dpIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.dp-pop{animation:none}}
+.dp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.dp-h b{font-size:var(--fs-300)}
+.dp-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-variant-numeric:tabular-nums}
+.dp-dn{font-size:var(--fs-100);font-weight:var(--fw-semi);color:var(--fg2);padding:4px 0 6px}
+.dp-d{height:40px;border-radius:50%;font-size:var(--fs-200);display:grid;place-items:center;aspect-ratio:1;margin:0 auto;width:40px}
+.dp-d:hover:not(:disabled){background:var(--subtle-hover)}
+.dp-d.in{background:var(--subtle)}
+.dp-d.today{box-shadow:inset 0 0 0 2px var(--fg)}
+.dp-d.sel,.dp-d.sel:hover{background:var(--sel);color:var(--on-sel);font-weight:700;box-shadow:none}
+.dp-d:disabled{color:var(--disabled);cursor:not-allowed}
+.dp-d:focus-visible{outline:none;box-shadow:0 0 0 2px var(--ring-inner),0 0 0 4px var(--ring)}
+.dev-mobile .dp-pop{width:calc(100vw - 32px);max-width:358px}
+.dev-mobile .dates .dp:last-child .dp-pop{right:0}
+.dev-mobile .dates .dp:first-child .dp-pop{left:0}
+.dev-mobile .dp-btn{padding:12px}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -976,6 +1003,7 @@ bell:'<path d="M5.5 17V11a6.5 6.5 0 0 1 13 0v6"/><path d="M3.5 17h17"/><path d="
 chat:'<path d="M12 3.5a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5z"/><path d="M8 12h.01M12 12h.01M16 12h.01" style="stroke-width:2.8"/>',
 tune:'<path d="M6 3.5v17M12 3.5v17M18 3.5v17M3.5 8h5M9.5 15h5M15.5 8h5"/>',
 gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+calI:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
 search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
 down:'<path d="m6 9 6 6 6-6"/>',
 up:'<path d="m6 15 6-6 6 6"/>',
@@ -1169,7 +1197,15 @@ function calendar(p,o={}){const s=p.start,e=p.end;const cks=new Set(checkins(p))
     return `<div class="cal"><h4>${prev}<span>${MONTHS[m]} ${y}</span>${next}</h4><div class="g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dn">${x}</span>`).join('')}${cells}</div></div>`;}).join('')}</div>${(()=>{const perRow=S.dev==='mobile'?1:2;const vert=span<=4&&span>perRow;
   const btn=vert?`<button class="cal-arrow" data-a="calDown" aria-label="Scroll down to see all ${span} months">${I('down','lg')}</button>`:span>4?`<button class="cal-arrow" data-a="calSide" aria-label="Scroll sideways to see all ${span} months">${I('right','lg')}</button>`:'';
   return `<div class="cal-rail">${btn}</div>`;})()}</div>${span>4?`<p class="cal-more">Scroll sideways to see all ${span} months</p>`:''}`;}
-function dateFields(p,t){const dis=p.creating?'disabled':'';return `<div class="dates">${[['start','Start date'],['end','End date']].map(([k,l])=>`<div class="field"><label for="f-${t}-${k}">${l}</label><input class="inp" type="date" id="f-${t}-${k}" data-dt="${k}" data-t="${t}" value="${p[k]}" ${k==='end'?`min="${p.start}"`:''} ${dis}></div>`).join('')}</div>`;}
+const fmtL=v=>{const d=D(v);return `${MON[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;};
+function dateFields(p,t){const dis=p.creating?'disabled':'';return `<div class="dates">${[['start','Start date'],['end','End date']].map(([k,l])=>{const open=S.pop===`dp:${t}:${k}`;
+ return `<div class="field dp"><span class="lab" id="l-${t}-${k}">${l}</span><button type="button" class="inp dp-btn" id="f-${t}-${k}" data-a="dpOpen" data-t="${t}" data-k="${k}" aria-haspopup="dialog" aria-expanded="${open}" aria-labelledby="l-${t}-${k} f-${t}-${k}" ${dis}><span>${fmtL(p[k])}</span>${I('calI')}</button>${open?dpPop(p,t,k):''}</div>`;}).join('')}</div>`;}
+function dpPop(p,t,k){const cur=S.dpM;const y=Math.floor(cur/12),m=cur%12;const first=new Date(y,m,1);const pad=(first.getDay()+6)%7;const n=new Date(y,m+1,0).getDate();const today='2026-10-31';
+ let cells='';for(let i=0;i<pad;i++)cells+='<span></span>';
+ for(let d=1;d<=n;d++){const v=iso(new Date(y,m,d));const sel=v===p[k];const off=k==='end'&&v<p.start;const inR=v>p.start&&v<p.end;
+  cells+=`<button type="button" class="dp-d${sel?' sel':''}${v===today?' today':''}${inR?' in':''}" data-a="dpPick" data-t="${t}" data-k="${k}" data-v="${v}" aria-pressed="${sel}" aria-label="${MONTHS[m]} ${d}, ${y}" ${off?'disabled':''}>${d}</button>`;}
+ return `<div class="click-catch" data-a="closePop"></div><div class="dp-pop" role="dialog" aria-label="Choose ${k==='start'?'start':'end'} date"><div class="dp-h"><button type="button" class="ib sm" data-a="dpNav" data-v="-1" aria-label="Previous month">${I('left','sm')}</button><b>${MONTHS[m]} ${y}</b><button type="button" class="ib sm" data-a="dpNav" data-v="1" aria-label="Next month">${I('right','sm')}</button></div>
+ <div class="dp-g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dp-dn">${x}</span>`).join('')}${cells}</div></div>`;}
 function setDate(t,k,v){const isP=t==='proj';const d=isP?proj():S.draft;if(!v)return;
  if(k==='start'){const len=diff(d.start,d.end);d.start=v;if(d.end<v)d.end=addDays(v,len);}else{d.end=v<d.start?d.start:v;}
  d.preset=[6,13,29].includes(diff(d.start,d.end))?{6:'week',13:'2w',29:'month'}[diff(d.start,d.end)]:'custom';d.calM=null;d.pick='start';render();
@@ -1561,6 +1597,9 @@ const A={
   if(d.pick!=='end'){d.start=v;if(d.end<v)d.end=v;d.pick='end';}else{if(v<d.start){d.end=d.start;d.start=v;}else d.end=v;d.pick='start';vis=null;}
   d.preset=[6,13,29].includes(diff(d.start,d.end))?{6:'week',13:'2w',29:'month'}[diff(d.start,d.end)]:'custom';d.calM=vis;render();
   if(isP&&d.pick==='start'){d.activity.unshift({t:`Changed the timeline to ${fmt(d.start)} – ${fmt(d.end)}`,d:'Today'});toast(`Timeline updated: ${fmt(d.start)} – ${fmt(d.end)}`,{icon:'clock'});}},
+ dpOpen:el=>{const key=`dp:${el.dataset.t}:${el.dataset.k}`;if(S.pop===key){S.pop=null;render();return;}const d=el.dataset.t==='proj'?proj():S.draft;const x=D(d[el.dataset.k]);S.dpM=x.getFullYear()*12+x.getMonth();S.pop=key;render();const sel=document.querySelector('.dp-pop .dp-d.sel')||document.querySelector('.dp-pop .dp-d:not([disabled])');sel&&sel.focus();},
+ dpNav:el=>{S.dpM+=+el.dataset.v;render();},
+ dpPick:el=>{const {t,k,v}=el.dataset;S.pop=null;setDate(t,k,v);const b=document.getElementById(`f-${t}-${k}`);b&&b.focus();},
  calDown:el=>{const cals=[...el.closest('.cal-box').querySelectorAll('.cal')];const y=el.getBoundingClientRect().top;const nx=cals.find(c=>c.getBoundingClientRect().top>y+8);(nx||cals[0]).scrollIntoView({behavior:'smooth',block:nx?'center':'center'});},
  calSide:el=>{const w=el.closest('.cal-box').querySelector('.cal-wrap');const c=w&&w.querySelector('.cal');if(w&&c)w.scrollBy({left:c.offsetWidth+16,behavior:'smooth'});},
  calNav:el=>{const d=el.dataset.t==='proj'?proj():S.draft;const cur=d.calM!=null?d.calM:(D(d.start).getFullYear()*12+D(d.start).getMonth());d.calM=cur+(+el.dataset.v);render();},
@@ -1649,7 +1688,7 @@ document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');
 document.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;
  if(k==='title'||k==='desc'){S.draft[k]=e.target.value;if(k==='title'&&S.errors.title&&e.target.value.trim()){S.errors.title=false;e.target.classList.remove('err');e.target.setAttribute('aria-invalid','false');const m=$('#f-title-err');m&&m.remove();}}
  if(k==='finSearch'){S.finSearch=e.target.value;const pos=e.target.selectionStart;render();const n=$('#q-fin');n.focus();n.setSelectionRange(pos,pos);}});
-document.addEventListener('change',e=>{if(e.target.dataset.dt){setDate(e.target.dataset.t,e.target.dataset.dt,e.target.value);return;}const i=e.target.dataset.up;if(i==null)return;const file=e.target.files[0];if(!file)return;const r=new FileReader();
+document.addEventListener('change',e=>{const i=e.target.dataset.up;if(i==null)return;const file=e.target.files[0];if(!file)return;const r=new FileReader();
  r.onload=()=>{const p=proj();const s=p.steps[+i];(s.uploads=s.uploads||[]).push(r.result);p.activity.unshift({t:`Added a photo to Step ${+i+1}`,d:'Today'});render();toast('Photo added to this step');};r.readAsDataURL(file);});
 
 /* ---------- scroll ---------- */
