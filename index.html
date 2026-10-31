@@ -1087,6 +1087,8 @@ button.cal-more:hover{background:var(--subtle);color:var(--fg)}
 .addc .search .ib.sm{width:32px;height:32px;color:var(--fg)}
 .pin-info:not(.m){margin-bottom:8px}
 .addc .search input:focus,.addc .search input:focus-visible{outline:none}
+.asset-file{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:var(--r-300);background:var(--subtle);font-size:var(--fs-200);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.next.nx .uploads{align-items:center}
 </style>
 </head><body><div class="ctl"></div>
 <main class="stage"><div class="app"></div></main>
@@ -1441,7 +1443,7 @@ function createForm(m){const d=S.draft;const e=S.errors;const dis=d.creating?'di
  return `<div class="cp-form">
  ${pin?`<div class="from">${img(d.fromPin)}<span class="t">From your Pin: <b>${esc(pin.t)}</b> · ${esc(pin.src)}</span><button class="ib sm" data-a="openPin" data-id="${d.fromPin}" aria-label="Open source Pin">${I('link','sm')}</button></div>`:
  d.refsPins&&d.refsPins.length?`<div class="from"><span class="t">From your board: <b>${esc(d.boardName||SAVED[0].n)}</b> · ${d.refsPins.length} Pins</span></div>`:`<div class="from"><span class="t">Start from scratch, or pick a Pin from ${m?'Find ideas':'the ideas panel'} to fill this in for you.</span>${m?`<button class="btn btn-secondary xs" data-a="openIdeas">Find ideas</button>`:''}</div>`}
- <div class="cover-row"><div class="cover">${d.split&&d.refsPins&&d.refsPins.length>=3?`<div class="ci split">${d.refsPins.slice(0,3).map(k=>img(k)).join('')}</div>`:(d.cover?`<div class="ci">${img(d.cover)}</div>`:`<div class="ci empty"><button class="btn btn-primary choose-pin" data-a="openIdeas" ${dis}>${I('search','sm')}Choose a Pin</button></div>`)}${d.cover||d.split?`<button class="link" data-a="changeCover" ${dis}>Change cover</button>`:''}</div>
+ <div class="cover-row"><div class="cover">${d.split&&d.refsPins&&d.refsPins.length>=3?`<div class="ci split">${d.refsPins.slice(0,3).map(k=>img(k)).join('')}</div>`:(d.cover?`<div class="ci">${img(d.cover)}</div>`:`<div class="ci empty"><button class="btn btn-primary choose-pin" data-a="openIdeas" ${dis}>${I('search','sm')}Choose a Pin</button></div>`)}</div>
  <div class="cp-fields"><div class="field"><label for="f-title">Title</label><input class="inp ${e.title?'err':''}" id="f-title" data-k="title" value="${esc(d.title)}" placeholder="Add a title" ${dis} aria-invalid="${!!e.title}" aria-describedby="f-title-err">
  ${e.title?`<span class="err-msg" id="f-title-err">${I('alert','sm')}Add a name to save this project</span>`:''}</div>
  <div class="field"><label for="f-desc">Project description</label><textarea class="inp" id="f-desc" data-k="desc" placeholder="What are you making, and for where?" ${dis}>${esc(d.desc)}</textarea><span class="help">Optional</span></div>
@@ -1525,7 +1527,11 @@ function stepRefs(p,s){if(s.r)return s.r;const txt=(s.t+' '+(s.meta||'')+' '+s.b
 function stepRefsHtml(p,s){const rf=stepRefs(p,s);return rf.length?`<div class="nx-refs" aria-label="References for this step">${rf.map(r=>refRow(r,p.pinId&&PINS[p.pinId]?PINS[p.pinId].src:null)).join('')}</div>`:s.video?`<button class="lnk-row" data-a="toastMsg" data-v="Video opens in a player">${I('video','sm')}${esc(s.video)}</button>`:'';}
 function nextCard(p,m){const n=nextIdx(p);const d=stepsDone(p);
  if(n==null&&S.focus==null)return `<div class="next nx all-done" id="next-card"><div class="nx-h"><span class="st done">${I('check','sm')}</span><span class="nx-lab">All ${p.steps.length} steps done</span></div>
- <div class="nx-row"><div class="im">${p.cover?img(p.cover,p.title):`<span class="ph-txt" style="height:100%;background:var(--surface)">${I('check')}</span>`}</div><div class="nx-t"><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><div class="nx-b"><div class="acts"><button class="btn btn-primary mark-done" data-a="complete">Complete project</button></div></div></div></div>`;
+ <div class="nx-row"><div class="im">${p.cover?img(p.cover,p.title):`<span class="ph-txt" style="height:100%;background:var(--surface)">${I('check')}</span>`}</div><div class="nx-t"><h2>Ready to call it made?</h2><p>Complete the project to post it to Made it.</p></div><div class="nx-b">
+ <label class="lnk-row" style="cursor:pointer">${I('upload','sm')}Upload project photos and files<input type="file" accept="image/*,.pdf,video/*" multiple data-up="final" hidden></label>
+ <p class="help" style="margin:-8px 0 0">Document the finished work with photos, videos or PDFs.</p>
+ ${(p.assets||[]).length?`<div class="uploads">${p.assets.map(a=>a.img?`<img src="${a.img}" alt="Project photo">`:`<span class="asset-file">${I('file','sm')}${esc(a.name)}</span>`).join('')}</div>`:''}
+ <div class="acts"><button class="btn btn-primary mark-done" data-a="complete">Complete project</button></div></div></div></div>`;
  const i=S.focus!=null&&p.steps[S.focus]?S.focus:n;const s=p.steps[i];const last=d-1;ensureWip(p);
  const st=s.done?'done':s.wip?'cur':'';const jd=S.justDone!=null&&p.steps[S.justDone]&&p.steps[S.justDone].done?S.justDone:null;
  const lab=i===n?`Next step · ${d} of ${p.steps.length} done`:s.done?`Done ${esc(s.date||'')}`:s.wip?'In progress':'To start';
@@ -1558,7 +1564,7 @@ function timelineSec(p){const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const
 function overviewSide(p,m,inline){const t=S.side;const dn=p.steps.filter(s=>s.done&&s.date).map(s=>{const [mo,da]=s.date.split(' ');return iso(new Date(2026,MON.indexOf(mo),+da));});
  let body='';
  if(t==='activity') body=`<div class="list" style="gap:12px">${p.activity.map(a=>`<div class="feed-item"><span class="dot"></span><span>${esc(a.t)}<small>${esc(a.d)}</small></span></div>`).join('')}</div>`;
- else if(t==='files'){const f=p.steps.flatMap(s=>s.uploads||[]);body=f.length?`<div class="uploads">${f.map(u=>`<img src="${u}" alt="Uploaded photo">`).join('')}</div>`:`<div class="empty" style="padding:24px"><h3 style="font-size:var(--fs-300)">No files yet</h3><p>Photos you upload to a step appear here.</p></div>`;}
+ else if(t==='files'){const f=p.steps.flatMap(s=>s.uploads||[]).concat((p.assets||[]).filter(a=>a.img).map(a=>a.img));body=f.length?`<div class="uploads">${f.map(u=>`<img src="${u}" alt="Uploaded photo">`).join('')}</div>`:`<div class="empty" style="padding:24px"><h3 style="font-size:var(--fs-300)">No files yet</h3><p>Photos you upload to a step appear here.</p></div>`;}
  else body=`${m?'':`<div class="cov">${img(p.cover,p.title)}</div>`}<p style="margin:0">${esc(p.desc||'No description yet.')}</p>
  <div class="vis"><span class="lab" style="display:flex;gap:8px;align-items:center">${I(p.vis==='private'?'lock':'globe','sm')}Visibility</span><button class="chip round" data-a="pvis" data-v="private" aria-pressed="${p.vis==='private'}">Private</button><button class="chip round" data-a="pvis" data-v="public" aria-pressed="${p.vis==='public'}">Public</button></div>
  ${m&&!inline?`<button class="lnk-row" data-a="toRoadmap" style="background:var(--subtle);padding:12px;margin:0;justify-content:space-between"><span><small class="help" style="display:block">Next step · ${stepsDone(p)} of ${p.steps.length} done</small>${nextIdx(p)!=null?`Step ${nextIdx(p)+1} · ${esc(p.steps[nextIdx(p)].t)} · ${esc(p.steps[nextIdx(p)].dur.replace('About ',''))}`:'All steps done'}</span>${I('right')}</button>`:''}
@@ -1832,7 +1838,10 @@ document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');
 document.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;
  if(k==='title'||k==='desc'){S.draft[k]=e.target.value;if(k==='title'&&S.errors.title&&e.target.value.trim()){S.errors.title=false;e.target.classList.remove('err');e.target.setAttribute('aria-invalid','false');const m=$('#f-title-err');m&&m.remove();}}
  if(k==='finSearch'){S.finSearch=e.target.value;const pos=e.target.selectionStart;render();const n=$('#q-fin');n.focus();n.setSelectionRange(pos,pos);}});
-document.addEventListener('change',e=>{const i=e.target.dataset.up;if(i==null)return;const file=e.target.files[0];if(!file)return;const r=new FileReader();
+document.addEventListener('change',e=>{const i=e.target.dataset.up;if(i==null)return;
+ if(i==='final'){const p=proj();const fs=[...e.target.files];if(!fs.length)return;p.assets=p.assets||[];let left=fs.length;
+  fs.forEach(file=>{if(/^image\//.test(file.type)){const r=new FileReader();r.onload=()=>{p.assets.push({img:r.result});if(!--left)done();};r.readAsDataURL(file);}else{p.assets.push({name:file.name});if(!--left)done();}});
+  function done(){p.activity.unshift({t:`Added ${fs.length} project file${fs.length>1?'s':''}`,d:'Today'});render();toast(fs.length>1?`${fs.length} files added to the project`:'File added to the project');}return;}const file=e.target.files[0];if(!file)return;const r=new FileReader();
  r.onload=()=>{const p=proj();const s=p.steps[+i];(s.uploads=s.uploads||[]).push(r.result);p.activity.unshift({t:`Added a photo to Step ${+i+1}`,d:'Today'});render();toast('Photo added to this step');};r.readAsDataURL(file);});
 
 /* ---------- scroll ---------- */
