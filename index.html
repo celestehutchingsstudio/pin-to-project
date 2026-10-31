@@ -1568,8 +1568,8 @@ function mPin(){const id=S.pinId,p=PINS[id];const saved=S.saved.has(id);const li
  return `${mStatus()}<div class="m-hero">${img(id,p.t)}<button class="ib glass tl" data-a="back" aria-label="Back">${I('back')}</button><button class="ib glass tr" data-a="pinMore" data-id="${id}" aria-label="More options">${I('more')}</button><button class="ib glass" data-a="lightboxPin" style="position:absolute;right:12px;bottom:12px" aria-label="View full size">${I('expand')}</button></div>
  <div class="m-body" style="padding-top:0"><div class="m-actions"><button class="ib ${liked?'on':''}" data-a="likePin" aria-pressed="${liked}" aria-label="React">${I('heart')}</button><button class="ib" data-a="share" aria-label="Share">${I('share')}</button><span class="sp"></span>${makeCard(id)}
  <button class="btn ${saved?'btn-dark':'btn-primary'}" data-a="savePin" data-id="${id}" aria-pressed="${saved}">${saved?'Saved':'Save'}</button></div>
- <div class="creator">${av(p.by,'b')}<span class="meta"><b>${esc(p.by)}</b></span><button class="btn btn-secondary sm" data-a="visit" data-id="${id}">Visit site</button></div>
- <h1 style="font-size:var(--fs-400);margin:16px 0 8px">${esc(p.t)}</h1>${commentsBlock(id)}
+ <h1 style="font-size:var(--fs-400);margin:4px 0 8px">${esc(p.t)}</h1>
+ <div class="creator" style="margin-bottom:16px">${av(p.by,'b')}<span class="meta"><b>${esc(p.by)}</b></span><button class="btn btn-secondary sm" data-a="visit" data-id="${id}">Visit site</button></div>${commentsBlock(id)}
  <div class="sec-h"><h2>More to explore</h2></div>${grid(FEED.filter(x=>x!==id).slice(0,8),(x)=>pinCard(x))}</div>${pinMoreMenu()}`;}
 function mBoard(){const b=bd();
  return `${mStatus()}<div class="m-head"><button class="ib" data-a="back" aria-label="Back">${I('back')}</button><span style="flex:1"></span><button class="ib" data-a="toastMsg" data-v="Board link copied" aria-label="Share">${I('share')}</button><button class="ib" data-a="soon" data-v="Board options" aria-label="More options">${I('more')}</button></div>
